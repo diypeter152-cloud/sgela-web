@@ -28,6 +28,9 @@
     --text-dim: #A9A4C7;
     --accent: #FFD23F;
     --accent-2: #8B7BFF;
+    --success: #3DDC84;
+    --success-bg: rgba(61,220,132,0.12);
+    --success-border: rgba(61,220,132,0.4);
     --accent-grad: linear-gradient(135deg, #8B7BFF 0%, #B57BFF 100%);
     --student-grad: linear-gradient(135deg, #6D5BFF 0%, #8B5BFF 100%);
     --radius: 22px;
@@ -142,6 +145,18 @@
     background: rgba(139,123,255,0.16); padding: 1px 6px; border-radius: 6px;
     font-family: 'SF Mono', ui-monospace, monospace; font-size: 13.5px;
   }
+  .correct {
+    display: block; background: var(--success-bg); border: 1px solid var(--success-border);
+    border-left: 3px solid var(--success); border-radius: 12px;
+    padding: 10px 13px; margin: 8px 0; color: #BFFAD8; font-weight: 600;
+    animation: celebrate .5s cubic-bezier(.3,1.4,.5,1) both;
+  }
+  .correct strong { color: #EAFFF3; }
+  @keyframes celebrate {
+    0% { opacity: 0; transform: scale(.92); }
+    60% { transform: scale(1.03); }
+    100% { opacity: 1; transform: scale(1); }
+  }
 
   /* ---------- Thinking indicator ---------- */
   .thinking { display: flex; gap: 11px; align-items: flex-start; animation: rise .3s ease both; }
@@ -255,12 +270,16 @@
 
   function format(text) {
     let esc = text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    // green "correct / well done" callout: a line starting with [correct]
+    esc = esc.replace(/^\s*\[correct\]\s*(.+)$/gim, '<span class="correct">$1</span>');
     esc = esc.replace(/`([^`\n]+)`/g, "<code>$1</code>");
     esc = esc.replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
     esc = esc.replace(/\*([^*\n]+)\*/g, "<strong>$1</strong>");
     esc = esc.replace(/_([^_\n]+)_/g, "<em>$1</em>");
     // paragraphs
     return esc.split(/\n{2,}/).map(block => {
+      // leave the green callout as-is, don't wrap it in <p>
+      if (block.trim().startsWith('<span class="correct">')) return block;
       const lines = block.split("\n");
       if (lines.every(l => /^\s*[-•]\s+/.test(l))) {
         return "<ul>" + lines.map(l => "<li>"+l.replace(/^\s*[-•]\s+/,"")+"</li>").join("") + "</ul>";
