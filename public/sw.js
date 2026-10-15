@@ -1,6 +1,6 @@
-// Minimal service worker — makes Sgela installable and loads the shell fast.
-// We deliberately do NOT cache /api/chat (answers must be live).
-const CACHE = "sgela-v1";
+// Service worker — makes Sgela installable and loads the shell fast.
+// Bump CACHE version on every UI change so clients get the new version.
+const CACHE = "sgela-v3";
 const SHELL = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (e) => {
@@ -19,10 +19,19 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
-  // Never cache API calls — always go to network for live answers
-  if (url.pathname.startsWith("/api/")) return;
-  // Shell: cache-first, fall back to network
-  e.respondWith(
-    caches.match(e.request).then((hit) => hit || fetch(e.request))
-  );
+  if (url.pathname.startsWith("/api/")) return; // never cache live answers
+  // Network-first for the page itself so updates show immediately;
+  // fall back to cache when offline.
+  if (e.request.mode === "navigate" || url.pathname === "/" || url.pathname.endsWith(".html")) {
+    e.respondWith(
+      fetch(e.request).then((r) => {
+        const copy = r.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy));
+        return r;
+      }).catch(() => caches.match(e.request).then((hit) => hit || caches.match("/")))
+    );
+    return;
+  }
+  // Other assets: cache-first
+  e.respondWith(caches.match(e.request).then((hit) => hit || fetch(e.request)));
 });
