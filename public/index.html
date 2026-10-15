@@ -21,13 +21,14 @@
 <style>
   :root {
     --ink: #15132B;
-    --chalk: #FBFAF6;
+    --chalk: #FBF9F4;
     --highlight: #FFD23F;
-    --student: #2A2550;
+    --coral: #FF6B5A;
+    --student: #2D2763;
     --muted: #6B6880;
-    --line: #E7E4DA;
+    --line: #ECE8DE;
     --sgela-bubble: #FFFFFF;
-    --radius: 18px;
+    --radius: 26px;
     --maxw: 720px;
   }
 
@@ -45,19 +46,21 @@
 
   /* ---- Header ---- */
   header {
-    background: var(--ink);
+    background: linear-gradient(135deg, #1B1838 0%, #15132B 55%, #221B4A 100%);
     color: var(--chalk);
-    padding: 14px 18px calc(14px + env(safe-area-inset-top, 0));
-    padding-top: calc(14px + env(safe-area-inset-top, 0));
+    padding: 16px 20px calc(18px + env(safe-area-inset-top, 0));
+    padding-top: calc(16px + env(safe-area-inset-top, 0));
     display: flex;
     align-items: center;
     gap: 12px;
     flex-shrink: 0;
+    border-radius: 0 0 24px 24px;
+    box-shadow: 0 4px 20px rgba(21,19,43,0.12);
   }
   .mark {
     font-family: Fraunces, Georgia, serif;
     font-weight: 600;
-    font-size: 22px;
+    font-size: 23px;
     letter-spacing: -0.01em;
   }
   .mark .dot { color: var(--highlight); }
@@ -112,41 +115,53 @@
   }
   .chips { display: flex; flex-wrap: wrap; gap: 9px; }
   .chip {
-    border: 1px solid var(--line);
+    border: 1.5px solid var(--line);
     background: #fff;
     color: var(--ink);
-    padding: 10px 14px;
+    padding: 11px 16px;
     border-radius: 999px;
     font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
-    transition: border-color .15s, transform .05s;
+    transition: border-color .18s, background .18s, transform .08s, box-shadow .18s;
     font-family: inherit;
   }
-  .chip:hover { border-color: var(--ink); }
-  .chip:active { transform: scale(.97); }
+  .chip:hover {
+    border-color: var(--highlight);
+    background: #FFFDF4;
+    box-shadow: 0 4px 14px rgba(255,210,63,0.25);
+  }
+  .chip:active { transform: scale(.96); }
 
   /* ---- Bubbles ---- */
   .msg { display: flex; }
   .msg.student { justify-content: flex-end; }
   .bubble {
     max-width: 85%;
-    padding: 12px 15px;
+    padding: 13px 17px;
     border-radius: var(--radius);
     font-size: 15.5px;
     line-height: 1.5;
     white-space: pre-wrap;
     word-wrap: break-word;
+    animation: pop .28s cubic-bezier(.3,1.3,.5,1) both;
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(8px) scale(.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
   .msg.sgela .bubble {
     background: var(--sgela-bubble);
     border: 1px solid var(--line);
-    border-bottom-left-radius: 6px;
+    border-bottom-left-radius: 8px;
     color: var(--ink);
+    box-shadow: 0 2px 12px rgba(21,19,43,0.05);
   }
   .msg.student .bubble {
-    background: var(--student);
+    background: linear-gradient(135deg, #332B72 0%, #2D2763 100%);
     color: #fff;
-    border-bottom-right-radius: 6px;
+    border-bottom-right-radius: 8px;
+    box-shadow: 0 3px 14px rgba(45,39,99,0.25);
   }
   .bubble strong { font-weight: 600; }
   .bubble em { font-style: italic; }
@@ -179,30 +194,37 @@
   textarea {
     flex: 1;
     resize: none;
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 12px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 24px;
+    padding: 13px 18px;
     font-family: inherit;
     font-size: 16px; /* 16px stops iOS zoom-on-focus */
     line-height: 1.4;
     max-height: 120px;
     background: #fff;
     color: var(--ink);
+    transition: border-color .18s, box-shadow .18s;
   }
-  textarea:focus { outline: 2px solid var(--highlight); outline-offset: 0; border-color: transparent; }
+  textarea:focus {
+    outline: none;
+    border-color: var(--highlight);
+    box-shadow: 0 0 0 4px rgba(255,210,63,0.18);
+  }
   .send {
     flex-shrink: 0;
-    width: 46px; height: 46px;
+    width: 48px; height: 48px;
     border: none;
-    border-radius: 14px;
+    border-radius: 50%;
     background: var(--ink);
     color: var(--highlight);
-    font-size: 20px;
+    font-size: 19px;
     cursor: pointer;
     display: grid; place-items: center;
-    transition: transform .05s;
+    transition: transform .1s, box-shadow .18s;
+    box-shadow: 0 3px 12px rgba(21,19,43,0.22);
   }
-  .send:active { transform: scale(.94); }
+  .send:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(21,19,43,0.28); }
+  .send:active { transform: scale(.92); }
   .send:disabled { opacity: .4; cursor: default; }
 
   .disclaimer {
