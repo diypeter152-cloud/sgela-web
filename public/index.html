@@ -61,16 +61,30 @@
 
   /* ---------- Header ---------- */
   header {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 11px;
     padding: 15px 20px calc(15px) ;
     padding-top: calc(15px + env(safe-area-inset-top, 0));
     flex-shrink: 0;
-    border-bottom: 1px solid var(--border);
     background: rgba(14,12,29,0.72);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
+    z-index: 5;
+  }
+  /* soft gradient fade below the header — content blurs/fades as it scrolls under */
+  header::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: 100%;
+    height: 34px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, var(--bg) 0%, rgba(14,12,29,0.55) 45%, rgba(14,12,29,0) 100%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
   }
   .logo {
     width: 34px; height: 34px; border-radius: 11px;
