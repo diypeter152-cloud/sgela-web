@@ -61,15 +61,15 @@
 
   /* ---------- Header ---------- */
   header {
-    position: relative;
+    position: absolute;
+    top: 0; left: 8px; right: 8px;
+    margin-top: 8px;
     display: flex;
     align-items: center;
     gap: 11px;
     padding: 13px 18px;
     padding-top: calc(13px + env(safe-area-inset-top, 0));
-    margin: 8px 8px 0;
-    flex-shrink: 0;
-    z-index: 5;
+    z-index: 20;
     border-radius: 22px;
     /* --- Liquid Glass material (iOS 26 style) --- */
     background:
@@ -115,11 +115,11 @@
   @keyframes ring { 0%{box-shadow:0 0 0 0 rgba(61,220,132,.5)} 70%{box-shadow:0 0 0 7px rgba(61,220,132,0)} 100%{box-shadow:0 0 0 0 rgba(61,220,132,0)} }
 
   /* ---------- Thread ---------- */
-  main { flex: 1; overflow-y: auto; padding: 22px 16px 10px; -webkit-overflow-scrolling: touch; }
+  main { flex: 1; overflow-y: auto; padding: calc(84px + env(safe-area-inset-top, 0)) 16px 10px; -webkit-overflow-scrolling: touch; }
   .thread { max-width: var(--maxw); margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 
   /* ---------- Greeting ---------- */
-  .greeting { margin: 7vh auto 0; max-width: 560px; padding: 0 6px; animation: rise .5s ease both; }
+  .greeting { margin: 4vh auto 0; max-width: 560px; padding: 0 6px; animation: rise .5s ease both; }
   .greeting .hi {
     font-family: Fraunces, serif; font-weight: 600;
     font-size: clamp(30px, 8vw, 44px); line-height: 1.05; letter-spacing: -0.02em;
