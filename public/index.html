@@ -65,26 +65,31 @@
     display: flex;
     align-items: center;
     gap: 11px;
-    padding: 15px 20px calc(15px) ;
-    padding-top: calc(15px + env(safe-area-inset-top, 0));
+    padding: 13px 18px;
+    padding-top: calc(13px + env(safe-area-inset-top, 0));
+    margin: 8px 8px 0;
     flex-shrink: 0;
-    background: rgba(14,12,29,0.72);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
     z-index: 5;
+    border-radius: 22px;
+    /* --- Liquid Glass material (iOS 26 style) --- */
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 42%, rgba(255,255,255,0.02) 100%),
+      rgba(30,26,60,0.45);
+    backdrop-filter: blur(26px) saturate(185%);
+    -webkit-backdrop-filter: blur(26px) saturate(185%);
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.30),      /* bright specular top edge */
+      inset 0 0 0 1px rgba(255,255,255,0.04),
+      inset 0 -8px 20px rgba(255,255,255,0.03),
+      0 10px 34px rgba(0,0,0,0.32);              /* floating depth below */
   }
-  /* soft gradient fade below the header — content blurs/fades as it scrolls under */
-  header::after {
+  /* subtle moving sheen so the glass feels alive */
+  header::before {
     content: "";
-    position: absolute;
-    left: 0; right: 0; top: 100%;
-    height: 34px;
-    pointer-events: none;
-    background: linear-gradient(to bottom, var(--bg) 0%, rgba(14,12,29,0.55) 45%, rgba(14,12,29,0) 100%);
-    -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
-    mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
+    position: absolute; inset: 0;
+    border-radius: inherit; pointer-events: none;
+    background: linear-gradient(120deg, transparent 20%, rgba(255,255,255,0.08) 48%, transparent 72%);
   }
   .logo {
     width: 34px; height: 34px; border-radius: 11px;
