@@ -17,6 +17,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
 
+<!-- KaTeX: renders maths like a textbook (exponents, fractions, roots) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <style>
   :root {
     --bg: #0E0C1D;
@@ -152,6 +157,14 @@
     animation: celebrate .5s cubic-bezier(.3,1.4,.5,1) both;
   }
   .correct strong { color: #EAFFF3; }
+  /* Maths rendering */
+  .katex { font-size: 1.05em; }
+  .bubble .katex-display {
+    margin: 10px 0; padding: 10px 12px; overflow-x: auto; overflow-y: hidden;
+    background: rgba(139,123,255,0.08); border-radius: 10px;
+  }
+  .bubble .katex-display::-webkit-scrollbar { height: 5px; }
+  .bubble .katex-display::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   @keyframes celebrate {
     0% { opacity: 0; transform: scale(.92); }
     60% { transform: scale(1.03); }
@@ -269,7 +282,15 @@
   ];
 
   function format(text) {
-    let esc = text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    // 1) Pull out LaTeX math spans first so markdown formatting doesn't mangle them.
+    //    (math uses *, _, ^, {} which would otherwise be eaten by bold/italic rules)
+    const math = [];
+    let src = text.replace(/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$([^\$\n]+?)\$/g, (m) => {
+      math.push(m);
+      return "\u0000MATH" + (math.length - 1) + "\u0000";
+    });
+
+    let esc = src.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     // green "correct / well done" callout: a line starting with [correct]
     esc = esc.replace(/^\s*\[correct\]\s*(.+)$/gim, '<span class="correct">$1</span>');
     esc = esc.replace(/`([^`\n]+)`/g, "<code>$1</code>");
@@ -277,7 +298,7 @@
     esc = esc.replace(/\*([^*\n]+)\*/g, "<strong>$1</strong>");
     esc = esc.replace(/_([^_\n]+)_/g, "<em>$1</em>");
     // paragraphs
-    return esc.split(/\n{2,}/).map(block => {
+    const out = esc.split(/\n{2,}/).map(block => {
       // leave the green callout as-is, don't wrap it in <p>
       if (block.trim().startsWith('<span class="correct">')) return block;
       const lines = block.split("\n");
@@ -289,6 +310,11 @@
       }
       return "<p>" + block.replace(/\n/g,"<br>") + "</p>";
     }).join("");
+    // 2) Put the math spans back (KaTeX will render them after insertion)
+    let restored = out.replace(/\u0000MATH(\d+)\u0000/g, (_, i) => math[+i]);
+    // lift display math ($$..$$ / \[..\]) out of <p> wrappers so KaTeX renders it as a block
+    restored = restored.replace(/<p>\s*(\$\$[\s\S]+?\$\$|\\\[[\s\S]+?\\\])\s*<\/p>/g, "$1");
+    return restored;
   }
 
   function addStudent(text) {
@@ -329,6 +355,23 @@
 
   function scrollDown() { requestAnimationFrame(() => { main.scrollTop = main.scrollHeight; }); }
 
+  // Render LaTeX maths in an element using KaTeX (if it has loaded)
+  function renderMath(el) {
+    if (window.renderMathInElement) {
+      try {
+        window.renderMathInElement(el, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\[", right: "\\]", display: true },
+            { left: "$", right: "$", display: false },
+            { left: "\\(", right: "\\)", display: false },
+          ],
+          throwOnError: false,
+        });
+      } catch (e) { /* ignore */ }
+    }
+  }
+
   async function send(text) {
     text = (text || input.value).trim();
     if (!text) return;
@@ -364,6 +407,8 @@
       }
       bubble.classList.remove("cursor");
       bubble.innerHTML = format(full);
+      renderMath(bubble);
+      scrollDown();
       history.push({ role: "assistant", content: full });
     } catch (e) {
       stopThinking();
