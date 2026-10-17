@@ -6,6 +6,7 @@
 
 import fs from "fs";
 import path from "path";
+import { verifyCode } from "./_auth.js";
 
 const SYSTEM_PROMPT = fs.readFileSync(
   path.join(process.cwd(), "api", "system_prompt.txt"),
@@ -15,6 +16,17 @@ const SYSTEM_PROMPT = fs.readFileSync(
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  // --- Access gate: require a valid (trial or paid) code ---
+  const code = req.headers["x-sgela-access"] || (req.body && req.body.access);
+  const check = verifyCode(code);
+  if (!check.ok) {
+    res.setHeader("Content-Type", "application/json");
+    return res.status(402).json({
+      error: "access_required",
+      reason: check.reason,
+    });
   }
 
   try {

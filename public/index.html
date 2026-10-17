@@ -247,6 +247,68 @@
   .send:disabled { opacity: .4; cursor: default; }
   .disclaimer { max-width: var(--maxw); margin: 9px auto 0; font-size: 11px; color: var(--text-dim); text-align: center; }
 
+  /* ---------- Access banner ---------- */
+  .access-banner {
+    display: none;
+    position: absolute;
+    top: calc(64px + env(safe-area-inset-top, 0)); left: 0; right: 0;
+    z-index: 15; text-align: center;
+    font-size: 12px; font-weight: 600; color: #15132B;
+    background: var(--accent); padding: 5px 12px;
+    margin: 0 8px; border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+
+  /* ---------- Paywall ---------- */
+  .paywall {
+    display: none; position: fixed; inset: 0; z-index: 100;
+    align-items: center; justify-content: center; padding: 24px;
+    background: rgba(8,7,18,0.72);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  .paywall-card {
+    width: 100%; max-width: 380px; text-align: center;
+    background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 100%);
+    border: 1px solid var(--border); border-radius: 26px;
+    padding: 30px 24px; box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    animation: rise .35s ease both;
+  }
+  .paywall-logo {
+    width: 52px; height: 52px; border-radius: 16px; margin: 0 auto 16px;
+    background: var(--accent-grad); display: grid; place-items: center;
+    font-family: Fraunces, serif; font-weight: 600; font-size: 28px; color: #15132B;
+    box-shadow: 0 8px 22px rgba(139,123,255,0.45);
+  }
+  .paywall-card h2 {
+    font-family: Fraunces, serif; font-weight: 600; font-size: 26px;
+    margin: 0 0 8px; color: var(--text);
+  }
+  .paywall-sub { color: var(--text-dim); font-size: 14.5px; line-height: 1.55; margin: 0 0 22px; }
+  .paywall-sub strong { color: var(--accent); }
+  .pay-btn {
+    display: block; text-decoration: none; text-align: center;
+    background: var(--accent-grad); color: #15132B; font-weight: 700; font-size: 16px;
+    padding: 14px; border-radius: 16px; margin-bottom: 18px;
+    box-shadow: 0 8px 22px rgba(139,123,255,0.4); transition: transform .1s;
+  }
+  .pay-btn:active { transform: scale(.97); }
+  .code-row { display: flex; gap: 8px; }
+  .code-row input {
+    flex: 1; background: var(--bg-soft); border: 1px solid var(--border);
+    border-radius: 14px; padding: 12px 14px; color: var(--text); font-size: 15px; font-family: inherit;
+    outline: none;
+  }
+  .code-row input:focus { border-color: var(--accent-2); }
+  .code-row button {
+    border: none; border-radius: 14px; padding: 0 18px; font-weight: 600; font-size: 14px;
+    background: var(--surface-2); color: var(--text); border: 1px solid var(--border); cursor: pointer;
+  }
+  .code-row button:active { transform: scale(.96); }
+  .code-msg { font-size: 13px; margin-top: 10px; min-height: 16px; }
+  .code-msg.err { color: #FF8A7A; }
+  .code-msg.ok { color: var(--success); }
+  .paywall-foot { color: var(--text-dim); font-size: 11.5px; margin: 18px 0 0; line-height: 1.5; }
+
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 </head>
@@ -259,6 +321,8 @@
     </div>
     <span class="status"><span class="pulse"></span>Online</span>
   </header>
+
+  <div id="accessBanner" class="access-banner"></div>
 
   <main id="main">
     <div class="thread" id="thread">
@@ -286,6 +350,25 @@
     <div class="disclaimer">Sgela can make mistakes. Always check against your textbook and memo.</div>
   </footer>
 
+  <!-- Paywall overlay -->
+  <div id="paywall" class="paywall">
+    <div class="paywall-card">
+      <div class="paywall-logo">S</div>
+      <h2>Keep your tutor</h2>
+      <p class="paywall-sub">Your free week is up. Subscribe for <strong>R50/month</strong> to keep studying with Sgela — way cheaper than a tutor, available 24/7.</p>
+
+      <a id="payBtn" class="pay-btn" href="#" target="_blank" rel="noopener">Subscribe — R50/month</a>
+
+      <div class="code-row">
+        <input id="codeInput" type="text" placeholder="Enter your access code" autocomplete="off" />
+        <button id="codeBtn">Unlock</button>
+      </div>
+      <div id="codeMsg" class="code-msg"></div>
+
+      <p class="paywall-foot">Paid? Send us proof and you'll get your code. One code unlocks one month.</p>
+    </div>
+  </div>
+
 <script>
   const thread = document.getElementById("thread");
   const main = document.getElementById("main");
@@ -293,6 +376,81 @@
   const sendBtn = document.getElementById("send");
   const greeting = document.getElementById("greeting");
   const history = [];
+
+  // ---------- Access (trial + paid codes) ----------
+  // Stores a signed code in localStorage; sends it with every chat request.
+  function getAccess() {
+    try { return localStorage.getItem("sgela_access") || ""; } catch { return ""; }
+  }
+  function setAccess(code) {
+    try { localStorage.setItem("sgela_access", code); } catch {}
+  }
+  // read exp + type from a code without trusting it (server still verifies)
+  function readCode(code) {
+    try {
+      const p = code.split(".")[0].replace(/-/g,"+").replace(/_/g,"/");
+      const json = JSON.parse(atob(p + "===".slice((p.length+3)%4)));
+      return { type: json.t, exp: json.exp };
+    } catch { return null; }
+  }
+  function daysLeft(code) {
+    const c = readCode(code);
+    if (!c) return 0;
+    return Math.max(0, Math.ceil((c.exp*1000 - Date.now()) / 86400000));
+  }
+  function accessValid(code) {
+    const c = readCode(code);
+    return !!(c && c.exp*1000 > Date.now());
+  }
+
+  // On first ever visit, fetch a 7-day trial code automatically.
+  async function ensureAccess() {
+    let code = getAccess();
+    if (accessValid(code)) return code;
+    // no valid code — if we've never taken a trial, take one now
+    let trialTaken = false;
+    try { trialTaken = localStorage.getItem("sgela_trial_taken") === "1"; } catch {}
+    if (!trialTaken) {
+      try {
+        const r = await fetch("/api/trial");
+        const d = await r.json();
+        if (d.code) {
+          setAccess(d.code);
+          try { localStorage.setItem("sgela_trial_taken", "1"); } catch {}
+          return d.code;
+        }
+      } catch {}
+    }
+    return ""; // expired / used up — paywall
+  }
+
+  function updateBanner() {
+    const code = getAccess();
+    const el = document.getElementById("accessBanner");
+    if (!el) return;
+    if (accessValid(code)) {
+      const c = readCode(code);
+      const d = daysLeft(code);
+      if (c.type === "trial") {
+        el.textContent = `Free trial — ${d} day${d===1?"":"s"} left`;
+        el.style.display = "block";
+      } else {
+        el.textContent = d <= 5 ? `Subscription — ${d} day${d===1?"":"s"} left` : "";
+        el.style.display = d <= 5 ? "block" : "none";
+      }
+    } else {
+      el.style.display = "none";
+    }
+  }
+
+  function showPaywall() {
+    const pw = document.getElementById("paywall");
+    if (pw) pw.style.display = "flex";
+  }
+  function hidePaywall() {
+    const pw = document.getElementById("paywall");
+    if (pw) pw.style.display = "none";
+  }
 
   // rotating "thinking" phrases — feels like it's working through the problem
   const THINKS = [
@@ -394,6 +552,11 @@
   async function send(text) {
     text = (text || input.value).trim();
     if (!text) return;
+
+    // gate: must have a valid trial/paid code
+    const code = await ensureAccess();
+    if (!code) { showPaywall(); return; }
+
     if (greeting) greeting.remove();
     input.value = ""; input.style.height = "auto"; sendBtn.disabled = true;
 
@@ -404,10 +567,17 @@
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-sgela-access": code },
         body: JSON.stringify({ messages: history }),
       });
 
+      if (res.status === 402) {
+        stopThinking();
+        history.pop();
+        showPaywall();
+        sendBtn.disabled = false;
+        return;
+      }
       if (!res.ok || !res.body) throw new Error("bad response");
 
       stopThinking();
@@ -450,6 +620,37 @@
     input.style.height = "auto";
     input.style.height = Math.min(input.scrollHeight, 130) + "px";
   });
+
+  // ---------- Paywall wiring ----------
+  // Set your real payment link here (Paystack link / WhatsApp wa.me link).
+  const PAY_URL = "https://wa.me/27000000000?text=Hi%2C%20I%20want%20to%20subscribe%20to%20Sgela";
+  document.getElementById("payBtn").setAttribute("href", PAY_URL);
+
+  document.getElementById("codeBtn").addEventListener("click", () => {
+    const val = document.getElementById("codeInput").value.trim();
+    const msg = document.getElementById("codeMsg");
+    if (!val) { msg.className = "code-msg err"; msg.textContent = "Enter the code you were sent."; return; }
+    if (!accessValid(val)) {
+      msg.className = "code-msg err";
+      msg.textContent = "That code isn't valid or has expired. Check it and try again.";
+      return;
+    }
+    setAccess(val);
+    msg.className = "code-msg ok";
+    msg.textContent = "Unlocked! You're good to go 🎉";
+    updateBanner();
+    setTimeout(() => { hidePaywall(); }, 900);
+  });
+  document.getElementById("codeInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("codeBtn").click();
+  });
+
+  // On load: make sure the user has a trial, and show the right banner.
+  (async () => {
+    await ensureAccess();
+    updateBanner();
+    if (!accessValid(getAccess())) showPaywall();
+  })();
 
   if ("serviceWorker" in navigator) {
     // Register, and auto-reload once when a new version takes control
