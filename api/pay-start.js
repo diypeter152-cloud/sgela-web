@@ -33,8 +33,12 @@ export default async function handler(req, res) {
       ["amount", PRICE],
       ["item_name", ITEM],
     ];
-    const signature = pfSignature(fields);
-    fields.push(["signature", signature]);
+    // PayFast only enforces the signature when a passphrase is configured.
+    // In sandbox (no passphrase) we omit it so the shared test merchant works.
+    if (PF.passphrase) {
+      const signature = pfSignature(fields);
+      fields.push(["signature", signature]);
+    }
 
     return res.status(200).json({
       action: pfProcessUrl(),
@@ -46,3 +50,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "server" });
   }
 }
+
+// build: 1792595869
