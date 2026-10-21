@@ -357,7 +357,7 @@
       <h2>Keep your tutor</h2>
       <p class="paywall-sub">Your free week is up. Subscribe for <strong>R50/month</strong> to keep studying with Sgela — way cheaper than a tutor, available 24/7.</p>
 
-      <a id="payBtn" class="pay-btn" href="#" target="_blank" rel="noopener">Subscribe — R50/month</a>
+      <button id="payBtn" class="pay-btn" type="button">Subscribe — R50/month</button>
 
       <div class="code-row">
         <input id="codeInput" type="text" placeholder="Enter your access code" autocomplete="off" />
@@ -365,7 +365,7 @@
       </div>
       <div id="codeMsg" class="code-msg"></div>
 
-      <p class="paywall-foot">Paid? Send us proof and you'll get your code. One code unlocks one month.</p>
+      <p class="paywall-foot">Pay securely with PayFast — card or instant EFT. You'll be unlocked for 30 days the moment it clears. Have a code instead? Enter it above.</p>
     </div>
   </div>
 
@@ -622,9 +622,69 @@
   });
 
   // ---------- Paywall wiring ----------
-  // Set your real payment link here (Paystack link / WhatsApp wa.me link).
-  const PAY_URL = "https://wa.me/27000000000?text=Hi%2C%20I%20want%20to%20subscribe%20to%20Sgela";
-  document.getElementById("payBtn").setAttribute("href", PAY_URL);
+  // Subscribe -> start a PayFast payment and redirect to their secure page.
+  document.getElementById("payBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("payBtn");
+    const msg = document.getElementById("codeMsg");
+    btn.disabled = true; btn.textContent = "Taking you to PayFast…";
+    try {
+      const r = await fetch("/api/pay-start", { method: "POST" });
+      if (r.status === 503) {
+        msg.className = "code-msg err";
+        msg.textContent = "Card payments aren't switched on yet — use an access code for now.";
+        btn.disabled = false; btn.textContent = "Subscribe — R50/month";
+        return;
+      }
+      const data = await r.json();
+      if (!data.action) throw new Error("no action");
+      try { localStorage.setItem("sgela_pending_pay", data.mPaymentId); } catch {}
+      // build a form and POST to PayFast
+      const form = document.createElement("form");
+      form.method = "POST"; form.action = data.action;
+      for (const f of data.fields) {
+        const i = document.createElement("input");
+        i.type = "hidden"; i.name = f.name; i.value = f.value;
+        form.appendChild(i);
+      }
+      document.body.appendChild(form);
+      form.submit();
+    } catch (e) {
+      msg.className = "code-msg err";
+      msg.textContent = "Couldn't start the payment. Try again in a moment.";
+      btn.disabled = false; btn.textContent = "Subscribe — R50/month";
+    }
+  });
+
+  // After returning from PayFast (?claim=<id>), poll until the payment
+  // is confirmed, then unlock automatically.
+  async function handlePayReturn() {
+    const params = new URLSearchParams(location.search);
+    const claimId = params.get("claim");
+    if (!claimId) return;
+    showPaywall();
+    const msg = document.getElementById("codeMsg");
+    msg.className = "code-msg"; msg.textContent = "Confirming your payment…";
+    // clean the URL
+    history.replaceState({}, "", location.pathname);
+
+    for (let i = 0; i < 20; i++) {
+      try {
+        const r = await fetch(`/api/pay-claim?id=${encodeURIComponent(claimId)}`);
+        const d = await r.json();
+        if (d.status === "paid" && d.code) {
+          setAccess(d.code);
+          msg.className = "code-msg ok";
+          msg.textContent = "Payment confirmed — you're unlocked for a month! 🎉";
+          updateBanner();
+          setTimeout(hidePaywall, 1400);
+          return;
+        }
+      } catch {}
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+    msg.className = "code-msg err";
+    msg.textContent = "Still confirming… if you paid, give it a minute and reload. Payment can take a moment.";
+  }
 
   document.getElementById("codeBtn").addEventListener("click", () => {
     const val = document.getElementById("codeInput").value.trim();
@@ -645,8 +705,12 @@
     if (e.key === "Enter") document.getElementById("codeBtn").click();
   });
 
-  // On load: make sure the user has a trial, and show the right banner.
+  // On load: handle a return from PayFast, else ensure trial + banner.
   (async () => {
+    if (new URLSearchParams(location.search).get("claim")) {
+      await handlePayReturn();
+      return;
+    }
     await ensureAccess();
     updateBanner();
     if (!accessValid(getAccess())) showPaywall();
