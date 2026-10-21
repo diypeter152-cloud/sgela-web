@@ -6,11 +6,17 @@
 
 import crypto from "crypto";
 
+const MODE = process.env.PAYFAST_MODE || "sandbox";
+const IS_SANDBOX = MODE !== "live";
+
+// In sandbox mode we use PayFast's universal TEST merchant so you can test
+// the full flow with fake money, no setup. In live mode we use YOUR real
+// credentials from the environment variables.
 export const PF = {
-  mode: process.env.PAYFAST_MODE || "sandbox", // "sandbox" | "live"
-  merchantId: process.env.PAYFAST_MERCHANT_ID || "",
-  merchantKey: process.env.PAYFAST_MERCHANT_KEY || "",
-  passphrase: process.env.PAYFAST_PASSPHRASE || "",
+  mode: MODE,
+  merchantId: IS_SANDBOX ? "10000100" : (process.env.PAYFAST_MERCHANT_ID || ""),
+  merchantKey: IS_SANDBOX ? "46f0cd694581a" : (process.env.PAYFAST_MERCHANT_KEY || ""),
+  passphrase: IS_SANDBOX ? "" : (process.env.PAYFAST_PASSPHRASE || ""),
 };
 
 export function pfConfigured() {
