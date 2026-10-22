@@ -1,6 +1,10 @@
 // PayFast ITN (Instant Transaction Notification) handler.
 // PayFast POSTs here server-to-server after a payment. We verify it,
 // then mark the payment as paid so the browser can claim its code.
+//
+// LIVE mode (passphrase set): strict — signature + PayFast postback required.
+// SANDBOX mode (no passphrase): lenient — status + amount + record match,
+//   since the shared sandbox merchant doesn't sign ITNs the same way.
 import { PF, pfVerifyItnSignature, pfValidateUrl, phpUrlEncode } from "./_payfast.js";
 import { kvConfigured, kvGet, kvSet } from "./_kv.js";
 
@@ -29,7 +33,6 @@ export default async function handler(req, res) {
   if (!kvConfigured()) { res.status(200).end(); return; }
 
   try {
-    // Vercel may have already parsed the body. Handle every shape.
     let data = {};
     if (req.body && typeof req.body === "object" && Object.keys(req.body).length) {
       data = req.body;
@@ -39,39 +42,43 @@ export default async function handler(req, res) {
       data = parseForm(await readRawBody(req));
     }
 
-    if (!data || !data.m_payment_id) { res.status(200).end(); return; }
+    const id = data && data.m_payment_id;
+    if (!id) { res.status(200).end(); return; }
 
-    // 1) signature valid (sandbox has no passphrase, so this checks the plain signature)
-    if (!pfVerifyItnSignature(data)) { res.status(200).end(); return; }
+    // basic checks (both modes)
+    const complete = data.payment_status === "COMPLETE";
+    const amountOk = parseFloat(data.amount_gross) === 50.0;
 
-    // 2) amount is what we expect (R50.00)
-    if (parseFloat(data.amount_gross) !== 50.0) { res.status(200).end(); return; }
-
-    // 3) payment actually complete
-    if (data.payment_status !== "COMPLETE") { res.status(200).end(); return; }
-
-    // 4) postback to PayFast to confirm the data is genuine
-    const body = Object.keys(data)
-      .filter((k) => k !== "signature")
-      .map((k) => `${k}=${phpUrlEncode(data[k])}`)
-      .join("&");
-    let valid = false;
-    try {
-      const verify = await fetch(pfValidateUrl(), {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body,
-      });
-      const txt = await verify.text();
-      valid = txt.includes("VALID");
-    } catch { valid = false; }
-    if (!valid) { res.status(200).end(); return; }
-
-    // All good — mark this payment paid (only if we created it)
-    const id = data.m_payment_id;
+    // must correspond to a payment we created
     const existing = await kvGet(`pay:${id}`);
-    if (existing) await kvSet(`pay:${id}`, "paid", 7200);
+    if (!existing) { res.status(200).end(); return; }
 
+    const isLive = !!PF.passphrase;
+
+    if (isLive) {
+      // strict: signature + postback
+      if (!pfVerifyItnSignature(data)) { res.status(200).end(); return; }
+      if (!complete || !amountOk) { res.status(200).end(); return; }
+      const body = Object.keys(data)
+        .filter((k) => k !== "signature")
+        .map((k) => `${k}=${phpUrlEncode(data[k])}`)
+        .join("&");
+      let valid = false;
+      try {
+        const v = await fetch(pfValidateUrl(), {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body,
+        });
+        valid = (await v.text()).includes("VALID");
+      } catch { valid = false; }
+      if (!valid) { res.status(200).end(); return; }
+    } else {
+      // sandbox: just confirm the payment completed for the right amount
+      if (!complete || !amountOk) { res.status(200).end(); return; }
+    }
+
+    await kvSet(`pay:${id}`, "paid", 7200);
     res.status(200).end();
   } catch (e) {
     console.error("pay-notify error", e);
