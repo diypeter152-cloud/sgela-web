@@ -665,7 +665,7 @@
     const msg = document.getElementById("codeMsg");
     msg.className = "code-msg"; msg.textContent = "Confirming your payment…";
     // clean the URL
-    history.replaceState({}, "", location.pathname);
+    try { if (window.history && typeof history.replaceState === "function") history.replaceState({}, "", location.pathname); } catch (e) {}
 
     // Poll for up to ~2 minutes — PayFast's confirmation can take a little while.
     for (let i = 0; i < 60; i++) {
