@@ -667,7 +667,8 @@
     // clean the URL
     history.replaceState({}, "", location.pathname);
 
-    for (let i = 0; i < 20; i++) {
+    // Poll for up to ~2 minutes — PayFast's confirmation can take a little while.
+    for (let i = 0; i < 60; i++) {
       try {
         const r = await fetch(`/api/pay-claim?id=${encodeURIComponent(claimId)}`);
         const d = await r.json();
@@ -680,10 +681,29 @@
           return;
         }
       } catch {}
-      await new Promise((r) => setTimeout(r, 1500));
+      await new Promise((r) => setTimeout(r, 2000));
     }
     msg.className = "code-msg err";
-    msg.textContent = "Still confirming… if you paid, give it a minute and reload. Payment can take a moment.";
+    msg.textContent = "Still confirming your payment… tap below once you've paid, or reload in a minute.";
+    // show a manual re-check button so a slow confirmation isn't a dead end
+    const retry = document.createElement("button");
+    retry.textContent = "I've paid — check again";
+    retry.className = "codeBtnRetry";
+    retry.style.cssText = "margin-top:10px;border:none;border-radius:12px;padding:10px 16px;background:var(--accent-grad);color:#15132B;font-weight:700;cursor:pointer;";
+    retry.onclick = async () => {
+      retry.disabled = true; retry.textContent = "Checking…";
+      try {
+        const r = await fetch(`/api/pay-claim?id=${encodeURIComponent(claimId)}`);
+        const d = await r.json();
+        if (d.status === "paid" && d.code) {
+          setAccess(d.code); updateBanner();
+          msg.className = "code-msg ok"; msg.textContent = "Payment confirmed — unlocked! 🎉";
+          retry.remove(); setTimeout(hidePaywall, 1400); return;
+        }
+      } catch {}
+      retry.disabled = false; retry.textContent = "I've paid — check again";
+    };
+    msg.parentNode.insertBefore(retry, msg.nextSibling);
   }
 
   document.getElementById("codeBtn").addEventListener("click", () => {
