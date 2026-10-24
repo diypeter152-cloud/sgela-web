@@ -23,6 +23,9 @@ const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || "";
 const WA_TOKEN = process.env.WHATSAPP_TOKEN || "";
 const WA_PHONE_ID = process.env.WHATSAPP_PHONE_ID || "";
 
+// Raise the serverless timeout so a photo (vision) call has room to finish.
+export const maxDuration = 30;
+
 export default async function handler(req, res) {
   // 1. Webhook verification (Meta calls once on connect)
   if (req.method === "GET") {
@@ -36,15 +39,33 @@ export default async function handler(req, res) {
   }
   if (req.method !== "POST") return res.status(405).end();
 
-  res.status(200).end(); // ack fast
-
+  // Do the work FIRST, then ack. On Vercel the function can be frozen the
+  // moment the response is sent, so acking early drops the reply.
   try {
-    const value = req.body?.entry?.[0]?.changes?.[0]?.value;
-    const message = value?.messages?.[0];
-    if (!message) return;
-    const from = message.from;
-    if (!from) return;
+    await handleMessage(req);
+  } catch (e) {
+    console.error("whatsapp handler error", e);
+  }
+  try { res.status(200).end(); } catch {}
+}
 
+async function handleMessage(req) {
+  const value = req.body?.entry?.[0]?.changes?.[0]?.value;
+  const message = value?.messages?.[0];
+  if (!message) return;
+  const from = message.from;
+  if (!from) return;
+
+  // ---- de-dupe: Meta re-delivers if we're slow; answer each message once ----
+  if (kvConfigured() && message.id) {
+    try {
+      const seen = await kvGet(`waseen:${message.id}`);
+      if (seen) return;
+      await kvSet(`waseen:${message.id}`, "1", 600);
+    } catch {}
+  }
+
+  {
     // ---- gating ----
     const user = await getUser(from);
     const origin = `https://${req.headers.host}`;
@@ -113,8 +134,6 @@ export default async function handler(req, res) {
 
     await sendWhatsApp(from, answer + suffix);
     await bumpCount(from, user);
-  } catch (e) {
-    console.error("whatsapp handler error", e);
   }
 }
 
