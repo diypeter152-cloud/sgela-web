@@ -7,6 +7,7 @@
 //   since the shared sandbox merchant doesn't sign ITNs the same way.
 import { PF, pfVerifyItnSignature, pfValidateUrl, phpUrlEncode } from "./_payfast.js";
 import { kvConfigured, kvGet, kvSet } from "./_kv.js";
+import { markPaid } from "./_wauser.js";
 
 function parseForm(str) {
   const out = {};
@@ -79,6 +80,14 @@ export default async function handler(req, res) {
     }
 
     await kvSet(`pay:${id}`, "paid", 7200);
+
+    // If this payment came from a WhatsApp pay-by-link, custom_str1 holds the
+    // student's number. Unlock that number for 30 days.
+    const waNumber = (data.custom_str1 || "").replace(/[^0-9]/g, "");
+    if (waNumber) {
+      try { await markPaid(waNumber); } catch (e) { console.error("markPaid failed", e); }
+    }
+
     res.status(200).end();
   } catch (e) {
     console.error("pay-notify error", e);

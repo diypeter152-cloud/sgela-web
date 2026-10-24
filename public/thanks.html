@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sgela — Payment</title>
+<style>
+  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:
+    radial-gradient(900px 500px at 80% -10%, rgba(139,123,255,0.18), transparent 60%),#0E0C1D;
+    color:#F3F1FB;display:grid;place-items:center;height:100dvh;margin:0;text-align:center;padding:24px}
+  .card{max-width:360px}
+  .logo{width:56px;height:56px;border-radius:16px;margin:0 auto 18px;
+    background:linear-gradient(135deg,#8B7BFF,#B57BFF);display:grid;place-items:center;
+    font-weight:700;font-size:28px;color:#15132B}
+  h1{font-size:24px;margin:0 0 10px}
+  p{color:#A9A4C7;line-height:1.5;margin:0 0 20px}
+  a{display:inline-block;background:linear-gradient(135deg,#8B7BFF,#B57BFF);color:#15132B;
+    font-weight:700;text-decoration:none;padding:13px 22px;border-radius:14px}
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="logo">S</div>
+    <h1 id="t">Payment received 🎉</h1>
+    <p id="m">You're unlocked for a month. Head back to WhatsApp and message Sgela — you're good to go.</p>
+    <a href="https://wa.me/">Back to WhatsApp</a>
+  </div>
+<script>
+  // if cancelled (?c=1) show a softer message
+  if (new URLSearchParams(location.search).get('c') === '1') {
+    document.getElementById('t').textContent = 'Payment cancelled';
+    document.getElementById('m').textContent = 'No worries — whenever you’re ready, tap the subscribe link in WhatsApp again.';
+  }
+</script>
+</body>
+</html>
