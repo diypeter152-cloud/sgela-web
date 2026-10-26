@@ -76,7 +76,8 @@ async function handleMessage(req) {
       const msg = returning
         ? `Your Sgela subscription has ended. 🎓\n\nRenew to keep your Matric tutor — Maths, Sciences, Geography, English & Afrikaans — for *R50/month*.\n\nTap to renew (card or instant EFT):\n${link}\n\nOnce you've paid, message me again and we're back. 💪`
         : `🎓 Welcome to *Sgela* — your own *private* Matric tutor, right here on WhatsApp.\n\nIt's finals. Stuck on a question at 11pm? Send it to me — *type it or snap a photo* — and I'll walk you through it step by step, the way the exam wants it. ✍️\n\n📚 Maths · Sciences · Geography · English · Afrikaans\n⏰ 24/7, instant help\n💡 Teaches you how marks are actually awarded\n\nUnlock everything for *R50/month* — less than one textbook, cheaper than one tutoring session.\n\n👉 Tap to start (card or instant EFT):\n${link}\n\nPay once, message me, and we're in. Let's get those marks 💪`;
-      await sendWhatsApp(from, msg);
+      const terms = `\n\n_By subscribing you agree to our Terms & Privacy Policy:_\n${origin}/terms.html`;
+      await sendWhatsApp(from, msg + terms);
       try { await kvIncr("stat:prompts"); } catch {} // funnel: pay prompts shown
       return;
     }
