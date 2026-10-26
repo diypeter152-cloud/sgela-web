@@ -72,10 +72,11 @@ async function handleMessage(req) {
 
     if (user.state === "expired") {
       const link = `${origin}/api/pay-wa?n=${encodeURIComponent(from)}`;
-      await sendWhatsApp(
-        from,
-        `Your free week with Sgela is up! 🎓\n\nKeep your Matric tutor — Maths, Sciences, Geography, English & Afrikaans — for just *R50/month*.\n\nTap to subscribe (card or instant EFT):\n${link}\n\nOnce you've paid, message me again and we're back. 💪`
-      );
+      const returning = user.paidUntil && user.paidUntil > 0; // has subscribed before
+      const msg = returning
+        ? `Your Sgela subscription has ended. 🎓\n\nRenew to keep your Matric tutor — Maths, Sciences, Geography, English & Afrikaans — for *R50/month*.\n\nTap to renew (card or instant EFT):\n${link}\n\nOnce you've paid, message me again and we're back. 💪`
+        : `Welcome to Sgela 🎓 — your personal Matric tutor on WhatsApp!\n\nI help with Maths, Sciences, Geography, English & Afrikaans — ask by text or send a photo of a question.\n\nTo get started, subscribe for *R50/month* (card or instant EFT):\n${link}\n\nOnce you've paid, message me and we're in! 💪`;
+      await sendWhatsApp(from, msg);
       return;
     }
 

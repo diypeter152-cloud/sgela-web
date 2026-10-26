@@ -5,7 +5,7 @@
 
 import { kvConfigured, kvGet, kvSet } from "./_kv.js";
 
-const TRIAL_DAYS = 7;
+const TRIAL_DAYS = 0; // Free trial OFF — new users must subscribe. Set to 7 to re-enable.
 const PAID_DAYS = 30;
 const DAY = 86400;
 
