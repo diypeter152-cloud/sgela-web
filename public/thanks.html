@@ -3,30 +3,32 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Sgela — Payment</title>
+<title>Sgela · Payment</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
 <style>
-  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:
-    radial-gradient(900px 500px at 80% -10%, rgba(139,123,255,0.18), transparent 60%),#0E0C1D;
-    color:#F3F1FB;display:grid;place-items:center;height:100dvh;margin:0;text-align:center;padding:24px}
-  .card{max-width:360px}
-  .logo{width:56px;height:56px;border-radius:16px;margin:0 auto 18px;
-    background:linear-gradient(135deg,#8B7BFF,#B57BFF);display:grid;place-items:center;
-    font-weight:700;font-size:28px;color:#15132B}
-  h1{font-size:24px;margin:0 0 10px}
-  p{color:#A9A4C7;line-height:1.5;margin:0 0 20px}
-  a{display:inline-block;background:linear-gradient(135deg,#8B7BFF,#B57BFF);color:#15132B;
-    font-weight:700;text-decoration:none;padding:13px 22px;border-radius:14px}
+  body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FBF6EC;color:#1E1736;
+    min-height:100dvh;display:grid;place-items:center;padding:24px;text-align:center}
+  .card{max-width:420px;background:#fff;border:2px solid #1E1736;border-radius:24px;box-shadow:8px 8px 0 #1E1736;padding:38px 30px}
+  h1{font-family:'Fraunces',Georgia,serif;font-size:34px;font-weight:700;margin:14px 0 10px;letter-spacing:-0.02em}
+  p{font-size:17px;line-height:1.55;color:#4A4262;margin:0 0 24px}
+  a.btn{display:inline-block;background:#25D366;color:#0B2A14;font-weight:800;text-decoration:none;
+    padding:15px 26px;border-radius:999px;border:2px solid #1E1736;box-shadow:3px 3px 0 #1E1736}
 </style>
 </head>
 <body>
-  <div class="card" id="card">
-    <div class="logo">S</div>
+  <div class="card">
+    <svg width="56" height="56" viewBox="0 0 120 120" role="img" aria-label="Sgela">
+      <rect width="120" height="120" rx="28" fill="#6A4CFF"/>
+      <rect x="28" y="52" width="64" height="40" rx="14" fill="#FFFFFF"/>
+      <path d="M44 88 L38 106 L62 90 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="46" cy="72" r="4" fill="#6A4CFF"/><circle cx="60" cy="72" r="4" fill="#6A4CFF"/><circle cx="74" cy="72" r="4" fill="#6A4CFF"/>
+      <polygon points="60,20 100,37 60,54 20,37" fill="#FFC93C" stroke="#6A4CFF" stroke-width="4" stroke-linejoin="round"/>
+    </svg>
     <h1 id="t">Payment received 🎉</h1>
     <p id="m">You're unlocked for a month. Head back to WhatsApp and message Sgela — you're good to go.</p>
-    <a href="https://wa.me/">Back to WhatsApp</a>
+    <a class="btn" href="https://wa.me/">Back to WhatsApp</a>
   </div>
 <script>
-  // if cancelled (?c=1) show a softer message
   if (new URLSearchParams(location.search).get('c') === '1') {
     document.getElementById('t').textContent = 'Payment cancelled';
     document.getElementById('m').textContent = 'No worries — whenever you’re ready, tap the subscribe link in WhatsApp again.';
