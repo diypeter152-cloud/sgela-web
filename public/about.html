@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sgela — Your WhatsApp Matric Tutor</title>
+<meta name="description" content="Sgela is an AI tutor for South African Grade 10–12 learners on WhatsApp. CAPS subjects, step-by-step help, R50/month with a 7-day free trial." />
+<style>
+  :root{--bg:#0E0C1D;--card:#15132B;--text:#F3F1FB;--muted:#A9A4C7;--accent:#8B7BFF;--accent2:#B57BFF}
+  *{box-sizing:border-box}
+  body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;background:
+    radial-gradient(1000px 600px at 80% -10%, rgba(139,123,255,0.20), transparent 60%),var(--bg);
+    color:var(--text);margin:0;line-height:1.6;padding:40px 20px}
+  main{max-width:860px;margin:0 auto}
+  header.hero{text-align:center;padding:20px 0 10px}
+  .logo{width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:grid;place-items:center;font-weight:800;font-size:30px;color:#15132B;margin:0 auto 20px}
+  h1{font-size:40px;line-height:1.15;margin:0 0 12px;letter-spacing:-0.5px}
+  .tag{color:var(--muted);font-size:19px;max-width:620px;margin:0 auto 26px}
+  .cta{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#15132B;
+    font-weight:700;text-decoration:none;padding:15px 30px;border-radius:14px;font-size:17px}
+  .pill{display:inline-block;background:rgba(139,123,255,0.14);color:#C9C2FF;border:1px solid rgba(139,123,255,0.3);
+    padding:6px 14px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:18px}
+  section{margin:44px 0}
+  h2{font-size:24px;margin:0 0 16px;text-align:center}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+  .card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:22px}
+  .card h3{margin:0 0 6px;font-size:17px;color:#fff}
+  .card p{margin:0;color:var(--muted);font-size:14.5px}
+  .emoji{font-size:24px;display:block;margin-bottom:10px}
+  /* pricing */
+  .price-wrap{display:flex;justify-content:center}
+  .price{background:rgba(255,255,255,0.04);border:1px solid rgba(139,123,255,0.35);border-radius:22px;
+    padding:32px 36px;text-align:center;max-width:380px;width:100%}
+  .price .amt{font-size:48px;font-weight:800;color:#fff}
+  .price .amt span{font-size:18px;color:var(--muted);font-weight:500}
+  .price ul{list-style:none;padding:0;margin:20px 0 0;text-align:left}
+  .price li{padding:7px 0 7px 28px;position:relative;color:#D8D4EC}
+  .price li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:800}
+  .trial{color:#9FE8B8;font-weight:700;margin-top:4px}
+  /* steps */
+  .steps{counter-reset:s;display:grid;gap:14px}
+  .step{display:flex;gap:16px;align-items:flex-start;background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 20px}
+  .step .n{counter-increment:s;flex:0 0 34px;height:34px;border-radius:10px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));color:#15132B;font-weight:800;
+    display:grid;place-items:center}
+  .step .n::before{content:counter(s)}
+  .step h3{margin:0 0 3px;font-size:16px;color:#fff}
+  .step p{margin:0;color:var(--muted);font-size:14.5px}
+  footer{color:var(--muted);font-size:13px;margin-top:50px;text-align:center;border-top:1px solid rgba(255,255,255,0.08);padding-top:24px}
+  footer a{color:var(--accent);text-decoration:none;margin:0 8px}
+  .company{margin-top:10px;font-size:12px;color:#6f6a8f}
+</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <div class="logo">S</div>
+    <div class="pill">For SA Grade 10–12 learners · CAPS curriculum</div>
+    <h1>Your Matric tutor,<br>right inside WhatsApp.</h1>
+    <p class="tag">Sgela is an AI tutor that helps South African high-school learners understand their schoolwork — type a question or send a photo, and get a clear, step-by-step explanation in seconds.</p>
+    <a class="cta" href="https://sgela-web.vercel.app">Try Sgela free</a>
+  </header>
+
+  <section>
+    <h2>What Sgela does</h2>
+    <div class="grid">
+      <div class="card"><span class="emoji">💬</span><h3>Ask on WhatsApp</h3><p>No app to install. Message Sgela like a friend and get help anytime, day or night.</p></div>
+      <div class="card"><span class="emoji">📸</span><h3>Snap a problem</h3><p>Stuck on a maths or science question? Send a photo and Sgela reads it and solves it step by step.</p></div>
+      <div class="card"><span class="emoji">📚</span><h3>All your subjects</h3><p>Maths, Maths Lit, Physical Sciences, Life Sciences, Geography, English & Afrikaans — aligned to CAPS.</p></div>
+      <div class="card"><span class="emoji">🎯</span><h3>Exam-smart</h3><p>Uses the official exam formulas and methods, with tips for how marks are actually awarded.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Simple pricing</h2>
+    <div class="price-wrap">
+      <div class="price">
+        <div class="amt">R50<span> / month</span></div>
+        <div class="trial">7-day free trial — no card needed to start</div>
+        <ul>
+          <li>Unlimited tutoring questions (fair use)</li>
+          <li>Text and photo questions</li>
+          <li>All CAPS subjects, Grade 10–12</li>
+          <li>Available on WhatsApp and web</li>
+          <li>Month-to-month — cancel anytime, no lock-in</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step"><div class="n"></div><div><h3>Start free</h3><p>Message Sgela on WhatsApp (or open the website). Your 7-day free trial begins automatically — no payment needed.</p></div></div>
+      <div class="step"><div class="n"></div><div><h3>Ask anything</h3><p>Type your question or send a photo of a problem. Sgela replies with a clear, step-by-step explanation.</p></div></div>
+      <div class="step"><div class="n"></div><div><h3>Subscribe for R50/month</h3><p>When your trial ends, tap the secure PayFast link to subscribe — card or instant EFT. Access unlocks immediately for 30 days.</p></div></div>
+      <div class="step"><div class="n"></div><div><h3>Renew or stop, your choice</h3><p>Billing is month-to-month with no automatic charges. Renew when you want more; stop anytime with no cancellation fee.</p></div></div>
+    </div>
+  </section>
+
+  <section style="text-align:center">
+    <a class="cta" href="https://sgela-web.vercel.app">Start your free trial</a>
+  </section>
+
+  <footer>
+    <div>
+      <a href="/about.html">About</a> ·
+      <a href="/terms.html">Terms &amp; Policies</a> ·
+      <a href="/terms.html#subscription">Subscription</a> ·
+      <a href="/terms.html#cancellation">Cancellation</a> ·
+      <a href="/terms.html#refund">Refunds</a> ·
+      <a href="/privacy.html">Privacy</a>
+    </div>
+    <div class="company">Sgela AI is a product of SKOLO EDTECH (Pty) Ltd · Reg 2026/848084/07 · South Africa<br>
+    Sgela provides educational support and does not issue accredited qualifications or certifications.</div>
+  </footer>
+</main>
+</body>
+</html>
