@@ -13,7 +13,7 @@
 import fs from "fs";
 import path from "path";
 import { kvConfigured, kvGet, kvSet, kvIncr } from "./_kv.js";
-import { getUser, bumpCount, daysLeft } from "./_wauser.js";
+import { getUser, bumpCount, FREE_QUESTIONS } from "./_wauser.js";
 
 const SYSTEM_PROMPT = fs.readFileSync(
   path.join(process.cwd(), "api", "system_prompt.txt"),
@@ -75,7 +75,7 @@ async function handleMessage(req) {
       const returning = user.paidUntil && user.paidUntil > 0; // has subscribed before
       const msg = returning
         ? `Your Sgela subscription has ended. 🎓\n\nRenew to keep your Matric tutor — Maths, Sciences, Geography, English & Afrikaans — for *R50/month*.\n\nTap to renew (card or instant EFT):\n${link}\n\nOnce you've paid, message me again and we're back. 💪`
-        : `🎓 Welcome to *Sgela* — your own *private* Matric tutor, right here on WhatsApp.\n\nIt's finals. Stuck on a question at 11pm? Send it to me — *type it or snap a photo* — and I'll walk you through it step by step, the way the exam wants it. ✍️\n\n📚 Maths · Sciences · Geography · English · Afrikaans\n⏰ 24/7, instant help\n💡 Teaches you how marks are actually awarded\n\nUnlock everything for *R50/month* — less than one textbook, cheaper than one tutoring session.\n\n👉 Tap to start (card or instant EFT):\n${link}\n\nPay once, message me, and we're in. Let's get those marks 💪`;
+        : `🎓 That's your *3 free questions* done — hope Sgela's already helping!\n\nKeep your own *private* Matric tutor — Maths, Sciences, Geography, English & Afrikaans — in your pocket 24/7, for just *R50/month* (about 2 kotas, cheaper than one tutoring session).\n\n💡 Ask anything, text or photo, day or night.\n\n👉 Tap to subscribe (card or instant EFT):\n${link}\n\nPay once, message me, and we're in. Let's get those marks 💪`;
       const terms = `\n\n_By subscribing you agree to our Terms & Privacy Policy:_\n${origin}/terms.html`;
       await sendWhatsApp(from, msg + terms);
       try { await kvIncr("stat:prompts"); } catch {} // funnel: pay prompts shown
@@ -128,11 +128,16 @@ async function handleMessage(req) {
       try { await kvSet(`wa:${from}`, JSON.stringify(history.slice(-12)), 30 * 24 * 3600); } catch {} // remember the student (name, context) for ~30 days
     }
 
-    // trial countdown nudge on the way out (only near the end)
+    // free-question nudge on the way out
     let suffix = "";
     if (user.state === "trial") {
-      const d = daysLeft(user);
-      if (d <= 2) suffix = `\n\n⏳ ${d} day${d === 1 ? "" : "s"} left on your free trial.`;
+      const remainingAfter = FREE_QUESTIONS - ((user.msgCount || 0) + 1); // after this answer
+      const payLink = `${origin}/api/pay-wa?n=${encodeURIComponent(from)}`;
+      if (remainingAfter <= 0) {
+        suffix = `\n\n👋 That was your last *free question*! Loving Sgela? Keep your private tutor — all subjects, 24/7 — for just *R50/month* (about 2 kotas):\n${payLink}`;
+      } else {
+        suffix = `\n\n✨ ${remainingAfter} free question${remainingAfter === 1 ? "" : "s"} left.`;
+      }
     }
 
     await sendWhatsApp(from, answer + suffix);
