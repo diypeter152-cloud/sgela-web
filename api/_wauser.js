@@ -1,5 +1,5 @@
 // ============================================================
-//  Sgela — WhatsApp user status (free questions / paid gating by phone number)
+//  Skolo — WhatsApp user status (free questions / paid gating by phone number)
 //  Stored in Upstash:  wauser:<number> = { firstSeen, paidUntil, msgCount }
 // ============================================================
 

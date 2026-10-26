@@ -1,4 +1,4 @@
-// Sgela funnel dashboard. Private: /api/stats?key=sgela-stats-2026
+// Skolo funnel dashboard. Private: /api/stats?key=sgela-stats-2026
 // Reads the analytics counters and renders a simple live funnel.
 import { kvConfigured, kvGet } from "./_kv.js";
 
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.status(200).send(`<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sgela — Funnel</title>
+<title>Skolo — Funnel</title>
 <style>
   :root{--bg:#0E0C1D;--card:#15132B;--text:#F3F1FB;--muted:#A9A4C7;--accent:#8B7BFF}
   *{box-sizing:border-box}
@@ -57,7 +57,7 @@ export default async function handler(req, res) {
   .foot{color:var(--muted);font-size:12px;margin-top:22px;line-height:1.6}
   .refresh{color:var(--accent);text-decoration:none}
 </style></head><body><main>
-  <h1>Sgela — Conversion funnel</h1>
+  <h1>Skolo — Conversion funnel</h1>
   <div class="sub">Live counts since analytics went on · <a class="refresh" href="">refresh</a></div>
   <div class="kpis">
     <div class="kpi"><div class="n">${newToPay}%</div><div class="k">new → paid</div></div>

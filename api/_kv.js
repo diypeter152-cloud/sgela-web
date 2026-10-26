@@ -1,5 +1,5 @@
 // ============================================================
-//  Sgela — tiny KV store (Upstash Redis REST)
+//  Skolo — tiny KV store (Upstash Redis REST)
 //  Used to remember which payments PayFast has confirmed, so the
 //  student's browser can claim their unlock code after paying.
 //  Works over plain HTTPS fetch — no SDK needed.

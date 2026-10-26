@@ -1,4 +1,4 @@
-# Sgela AI — Web App (+ installable PWA)
+# Skolo AI — Web App (+ installable PWA)
 
 A chat page students open in a browser or add to their home screen. Your OpenAI
 key stays safe on the server. No WhatsApp, no Meta, no waiting — deploy and share a link.
@@ -8,7 +8,7 @@ key stays safe on the server. No WhatsApp, no Meta, no waiting — deploy and sh
 - `public/manifest.json` + `public/sw.js` — make it installable ("Add to Home Screen").
 - `public/icon-192.png` / `icon-512.png` — the app icon.
 - `api/chat.js` — the backend. Holds your OpenAI key, talks to OpenAI, returns answers.
-- `api/system_prompt.txt` — Sgela's brain. Edit this to change how it answers.
+- `api/system_prompt.txt` — Skolo's brain. Edit this to change how it answers.
 
 ## Deploy it free on Vercel (about 10 minutes)
 
@@ -40,13 +40,13 @@ You need a free account at **vercel.com** (sign up with GitHub or email) and the
    ```
    vercel --prod
    ```
-5. Open the `.vercel.app` URL. Ask Sgela a question. Done.
+5. Open the `.vercel.app` URL. Ask Skolo a question. Done.
 
 ## Share with students
 Send them the `https://...vercel.app` link on WhatsApp. On their phone:
 - **Android (Chrome):** menu → "Add to Home screen"
 - **iPhone (Safari):** share icon → "Add to Home Screen"
-Now Sgela sits on their phone with an icon and opens full-screen like an app.
+Now Skolo sits on their phone with an icon and opens full-screen like an app.
 
 ## Costs
 - Vercel free tier is plenty for a pilot.

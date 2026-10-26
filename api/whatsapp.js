@@ -4,7 +4,7 @@
 //  POST /api/whatsapp -> handle a student's message (text OR photo)
 //
 //  Features: 7-day free trial per number, PayFast pay-by-link gating,
-//  photo reading (vision), short per-student memory. Same Sgela brain.
+//  photo reading (vision), short per-student memory. Same Skolo brain.
 //
 //  Env (Vercel): WHATSAPP_VERIFY_TOKEN, WHATSAPP_TOKEN, WHATSAPP_PHONE_ID,
 //  OPENAI_API_KEY, UPSTASH_REDIS_REST_* , PAYFAST_* (already set)
@@ -74,8 +74,8 @@ async function handleMessage(req) {
       const link = `${origin}/api/pay-wa?n=${encodeURIComponent(from)}`;
       const returning = user.paidUntil && user.paidUntil > 0; // has subscribed before
       const msg = returning
-        ? `Your Sgela subscription has ended. 🎓\n\nRenew to keep your Matric tutor — Maths, Sciences, Geography, English & Afrikaans — for *R50/month*.\n\nTap to renew (card or instant EFT):\n${link}\n\nOnce you've paid, message me again and we're back. 💪`
-        : `🎓 That's your *3 free questions* done — hope Sgela's already helping!\n\nKeep your own *private* Matric tutor — Maths, Sciences, Geography, English & Afrikaans — in your pocket 24/7, for just *R50/month* (about 2 kotas, cheaper than one tutoring session).\n\n💡 Ask anything, text or photo, day or night.\n\n👉 Tap to subscribe (card or instant EFT):\n${link}\n\nPay once, message me, and we're in. Let's get those marks 💪`;
+        ? `Your Skolo subscription has ended. 🎓\n\nRenew to keep your Matric tutor — Maths, Sciences, Geography, English & Afrikaans — for *R50/month*.\n\nTap to renew (card or instant EFT):\n${link}\n\nOnce you've paid, message me again and we're back. 💪`
+        : `🎓 That's your *3 free questions* done — hope Skolo's already helping!\n\nKeep your own *private* Matric tutor — Maths, Sciences, Geography, English & Afrikaans — in your pocket 24/7, for just *R50/month* (about 2 kotas, cheaper than one tutoring session).\n\n💡 Ask anything, text or photo, day or night.\n\n👉 Tap to subscribe (card or instant EFT):\n${link}\n\nPay once, message me, and we're in. Let's get those marks 💪`;
       const terms = `\n\n_By subscribing you agree to our Terms & Privacy Policy:_\n${origin}/terms.html`;
       await sendWhatsApp(from, msg + terms);
       try { await kvIncr("stat:prompts"); } catch {} // funnel: pay prompts shown
@@ -119,7 +119,7 @@ async function handleMessage(req) {
       { role: "user", content: userContent },
     ];
 
-    const answer = await askSgela(messages);
+    const answer = await askSkolo(messages);
 
     // save memory as plain text so it stays small
     history.push({ role: "user", content: plainForMemory });
@@ -134,7 +134,7 @@ async function handleMessage(req) {
       const remainingAfter = FREE_QUESTIONS - ((user.msgCount || 0) + 1); // after this answer
       const payLink = `${origin}/api/pay-wa?n=${encodeURIComponent(from)}`;
       if (remainingAfter <= 0) {
-        suffix = `\n\n👋 That was your last *free question*! Loving Sgela? Keep your private tutor — all subjects, 24/7 — for just *R50/month* (about 2 kotas):\n${payLink}`;
+        suffix = `\n\n👋 That was your last *free question*! Loving Skolo? Keep your private tutor — all subjects, 24/7 — for just *R50/month* (about 2 kotas):\n${payLink}`;
       } else {
         suffix = `\n\n✨ ${remainingAfter} free question${remainingAfter === 1 ? "" : "s"} left.`;
       }
@@ -146,7 +146,7 @@ async function handleMessage(req) {
 }
 
 // ---- OpenAI (vision-capable) ----
-async function askSgela(messages) {
+async function askSkolo(messages) {
   try {
     const resp = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -156,7 +156,7 @@ async function askSgela(messages) {
     const data = await resp.json();
     if (data.error) { console.error("OpenAI error:", data.error); return "Eish, I hit a snag there. Try again in a sec 🙏"; }
     return (data.choices?.[0]?.message?.content || "…").trim();
-  } catch (e) { console.error("askSgela", e); return "Something went wrong on my side. Try again 🙏"; }
+  } catch (e) { console.error("askSkolo", e); return "Something went wrong on my side. Try again 🙏"; }
 }
 
 // ---- download a WhatsApp image and return base64 ----

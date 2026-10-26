@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Sgela — Your Matric Tutor</title>
+<title>Skolo AI — Your Matric Tutor</title>
 <meta name="description" content="Your personal Grade 12 tutor for Maths, Sciences and more. Sharp minds, better marks." />
 
 <link rel="manifest" href="/manifest.json" />
 <meta name="theme-color" content="#0E0C1D" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Sgela" />
+<meta name="apple-mobile-web-app-title" content="Skolo" />
 <link rel="apple-touch-icon" href="/icon-192.png" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -316,7 +316,7 @@
   <header>
     <div class="logo">S</div>
     <div class="brand">
-      <span class="name">Sgela</span>
+      <span class="name">Skolo</span>
       <span class="tag">Matric tutor</span>
     </div>
     <span class="status"><span class="pulse"></span>Online</span>
@@ -342,12 +342,12 @@
 
   <footer>
     <div class="composer">
-      <textarea id="input" rows="1" placeholder="Ask Sgela anything…" autocomplete="off"></textarea>
+      <textarea id="input" rows="1" placeholder="Ask Skolo anything…" autocomplete="off"></textarea>
       <button class="send" id="send" aria-label="Send">
         <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
-    <div class="disclaimer">Sgela can make mistakes. Always check against your textbook and memo.</div>
+    <div class="disclaimer">Skolo can make mistakes. Always check against your textbook and memo.</div>
   </footer>
 
   <!-- Paywall overlay -->
@@ -355,7 +355,7 @@
     <div class="paywall-card">
       <div class="paywall-logo">S</div>
       <h2>Keep your tutor</h2>
-      <p class="paywall-sub">Your free week is up. Subscribe for <strong>R50/month</strong> to keep studying with Sgela — way cheaper than a tutor, available 24/7.</p>
+      <p class="paywall-sub">Your free week is up. Subscribe for <strong>R50/month</strong> to keep studying with Skolo — way cheaper than a tutor, available 24/7.</p>
 
       <button id="payBtn" class="pay-btn" type="button">Subscribe — R50/month</button>
 
@@ -522,7 +522,7 @@
     if (w) { clearInterval(w._timer); w.remove(); }
   }
 
-  function addSgelaBubble() {
+  function addSkoloBubble() {
     const wrap = document.createElement("div");
     wrap.className = "msg sgela";
     wrap.innerHTML = `<div class="avatar">S</div><div class="bubble cursor"></div>`;
@@ -581,7 +581,7 @@
       if (!res.ok || !res.body) throw new Error("bad response");
 
       stopThinking();
-      const bubble = addSgelaBubble();
+      const bubble = addSkoloBubble();
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let full = "";
@@ -601,7 +601,7 @@
       history.push({ role: "assistant", content: full });
     } catch (e) {
       stopThinking();
-      const b = addSgelaBubble();
+      const b = addSkoloBubble();
       b.classList.remove("cursor");
       b.innerHTML = format("I couldn't reach the server. Check your connection and try again 🙏");
     } finally {

@@ -106,7 +106,7 @@ export default async function handler(req, res) {
         try {
           await sendWhatsApp(
             waNumber,
-            `🎉 You're in! Your *Sgela* subscription is active for the next 30 days.\n\nAsk me anything — type a question or snap a photo of it. Maths, Sciences, Geography, English & Afrikaans.\n\nLet's get those marks 📚💪`
+            `🎉 You're in! Your *Skolo* subscription is active for the next 30 days.\n\nAsk me anything — type a question or snap a photo of it. Maths, Sciences, Geography, English & Afrikaans.\n\nLet's get those marks 📚💪`
           );
         } catch (e) { console.error("welcome send failed", e); }
       }

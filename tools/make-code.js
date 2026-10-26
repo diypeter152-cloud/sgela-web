@@ -1,5 +1,5 @@
 // ============================================================
-//  Sgela — access code generator (run this when someone pays)
+//  Skolo — access code generator (run this when someone pays)
 //
 //  Usage (from the project folder):
 //    SGELA_SECRET="your-secret" node tools/make-code.js            -> 30-day code
@@ -30,6 +30,6 @@ const sig = crypto.createHmac("sha256", SECRET).update(p).digest("hex").slice(0,
 const code = `${p}.${sig}`;
 
 const expDate = new Date(exp * 1000).toLocaleDateString("en-ZA", { year: "numeric", month: "short", day: "numeric" });
-console.log("\n✅ New Sgela access code (" + days + " days, expires " + expDate + "):\n");
+console.log("\n✅ New Skolo access code (" + days + " days, expires " + expDate + "):\n");
 console.log("   " + code + "\n");
 console.log("Send this to the student. They tap 'Enter access code' and paste it.\n");

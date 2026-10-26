@@ -6,7 +6,7 @@ import { PF, pfConfigured, pfProcessUrl, pfSignature } from "./_payfast.js";
 import { kvConfigured, kvSet, kvIncr } from "./_kv.js";
 
 const PRICE = "50.00";
-const ITEM = "Sgela Monthly Subscription";
+const ITEM = "Skolo Monthly Subscription";
 
 export default async function handler(req, res) {
   const number = (req.query && req.query.n) ? String(req.query.n).replace(/[^0-9]/g, "") : "";

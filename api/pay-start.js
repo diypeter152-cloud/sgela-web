@@ -6,7 +6,7 @@ import { PF, pfConfigured, pfProcessUrl, pfSignature } from "./_payfast.js";
 import { kvConfigured, kvSet } from "./_kv.js";
 
 const PRICE = "50.00";
-const ITEM = "Sgela Monthly Subscription";
+const ITEM = "Skolo Monthly Subscription";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "method" });

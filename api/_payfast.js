@@ -1,5 +1,5 @@
 // ============================================================
-//  Sgela — PayFast helpers (signature + config)
+//  Skolo — PayFast helpers (signature + config)
 //  PayFast handles the actual card/EFT on their secure page.
 //  We only sign the request and verify their notification.
 // ============================================================
