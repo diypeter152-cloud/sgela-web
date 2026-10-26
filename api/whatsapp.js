@@ -75,7 +75,7 @@ async function handleMessage(req) {
       const returning = user.paidUntil && user.paidUntil > 0; // has subscribed before
       const msg = returning
         ? `Your Sgela subscription has ended. 🎓\n\nRenew to keep your Matric tutor — Maths, Sciences, Geography, English & Afrikaans — for *R50/month*.\n\nTap to renew (card or instant EFT):\n${link}\n\nOnce you've paid, message me again and we're back. 💪`
-        : `🎓 Welcome to *Sgela* — your personal Matric tutor, right here on WhatsApp.\n\nIt's finals. Stuck on a question at 11pm? Send it to me — *type it or snap a photo* — and I'll walk you through it step by step, the way the exam wants it. ✍️\n\n📚 Maths · Sciences · Geography · English · Afrikaans\n⏰ 24/7, instant help\n💡 Teaches you how marks are actually awarded\n\nUnlock everything for *R50/month* — less than one textbook, cheaper than one tutoring session.\n\n👉 Tap to start (card or instant EFT):\n${link}\n\nPay once, message me, and we're in. Let's get those marks 💪`;
+        : `🎓 Welcome to *Sgela* — your own *private* Matric tutor, right here on WhatsApp.\n\nIt's finals. Stuck on a question at 11pm? Send it to me — *type it or snap a photo* — and I'll walk you through it step by step, the way the exam wants it. ✍️\n\n📚 Maths · Sciences · Geography · English · Afrikaans\n⏰ 24/7, instant help\n💡 Teaches you how marks are actually awarded\n\nUnlock everything for *R50/month* — less than one textbook, cheaper than one tutoring session.\n\n👉 Tap to start (card or instant EFT):\n${link}\n\nPay once, message me, and we're in. Let's get those marks 💪`;
       await sendWhatsApp(from, msg);
       try { await kvIncr("stat:prompts"); } catch {} // funnel: pay prompts shown
       return;
@@ -124,7 +124,7 @@ async function handleMessage(req) {
     history.push({ role: "user", content: plainForMemory });
     history.push({ role: "assistant", content: answer });
     if (kvConfigured()) {
-      try { await kvSet(`wa:${from}`, JSON.stringify(history.slice(-8)), 6 * 3600); } catch {}
+      try { await kvSet(`wa:${from}`, JSON.stringify(history.slice(-12)), 30 * 24 * 3600); } catch {} // remember the student (name, context) for ~30 days
     }
 
     // trial countdown nudge on the way out (only near the end)
