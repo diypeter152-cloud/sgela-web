@@ -3,7 +3,7 @@
 // (custom_str1) and auto-submit them to PayFast's secure page.
 import crypto from "crypto";
 import { PF, pfConfigured, pfProcessUrl, pfSignature } from "./_payfast.js";
-import { kvConfigured, kvSet } from "./_kv.js";
+import { kvConfigured, kvSet, kvIncr } from "./_kv.js";
 
 const PRICE = "50.00";
 const ITEM = "Sgela Monthly Subscription";
@@ -19,6 +19,7 @@ export default async function handler(req, res) {
   const origin = `https://${req.headers.host}`;
   const mPaymentId = "wa_" + crypto.randomBytes(8).toString("hex");
   try { await kvSet(`pay:${mPaymentId}`, "pending", 7200); } catch {}
+  try { await kvIncr("stat:taps"); } catch {} // funnel: pay links tapped
 
   const fields = [
     ["merchant_id", PF.merchantId],

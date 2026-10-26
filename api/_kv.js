@@ -36,3 +36,7 @@ export async function kvGet(key) {
 export async function kvDel(key) {
   return cmd(["DEL", key]);
 }
+// increment a counter (creates it at 1 if missing); used for funnel analytics
+export async function kvIncr(key) {
+  try { return await cmd(["INCR", key]); } catch { return null; }
+}

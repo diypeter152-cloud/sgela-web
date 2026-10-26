@@ -3,7 +3,7 @@
 //  Stored in Upstash:  wauser:<number> = { firstSeen, trialEnds, paidUntil, msgCount }
 // ============================================================
 
-import { kvConfigured, kvGet, kvSet } from "./_kv.js";
+import { kvConfigured, kvGet, kvSet, kvIncr } from "./_kv.js";
 
 const TRIAL_DAYS = 0; // Free trial OFF — new users must subscribe. Set to 7 to re-enable.
 const PAID_DAYS = 30;
@@ -22,6 +22,7 @@ export async function getUser(number) {
   if (!u) {
     u = { firstSeen: now(), trialEnds: now() + TRIAL_DAYS * DAY, paidUntil: 0, msgCount: 0 };
     try { await kvSet(`wauser:${number}`, JSON.stringify(u), 400 * DAY); } catch {}
+    try { await kvIncr("stat:newusers"); } catch {} // funnel: first-time students
   }
   return withState(u);
 }
