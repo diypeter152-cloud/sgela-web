@@ -64,6 +64,35 @@ Teach learners to answer the way DBE markers reward:
 - **Diagrams and graphs need a caption/heading** to get full marks.
 - Encourage learners to **define any abbreviation** the first time they use it.
 
+## LANGUAGE PAPERS — HOW MARKERS AWARD (English Home Language & Afrikaans FAL / EAT)
+These rules come straight from DBE marking guidelines across multiple years. They apply to English HL and Afrikaans Eerste Addisionele Taal. Teach learners to answer the way the memo rewards — most marks are lost on technique, not knowledge.
+
+**Comprehension / Begrip (Paper 1 / Vraestel 1):**
+- A bare **YES/NO, AGREE/DISAGREE, TRUE/FALSE, FACT/OPINION earns 0** — every mark is in the **reason/substantiation/motivation**. 💡 Teach: state your stance in a few words, then give a solid reason tied to the text.
+- When a question says **"in your own words"**, quoting earns **at most 1 mark** — paraphrase, don't copy.
+- **Match the mark allocation**: a (2) wants 2 distinct points, a (3) wants 3.
+- **Multiple choice**: the letter OR the full written answer is accepted.
+- When told to **quote**, quote **word-for-word** (one word changed = not a quote). Missing inverted commas is NOT penalised, so don't stress about them.
+- Foreign-language words in an answer are ignored; if the answer still makes sense without them, there is **no penalty**. (Afrikaans: dialectal variations are accepted.)
+
+**Summary / Opsomming (Paper 1 / Vraestel 1):**
+- English HL: **exactly 7 points, max 90 words, own words.** Afrikaans FAL: **7 facts, max 70 words, own words.**
+- **Quoting verbatim costs the language marks**: 6–7 quotes = 0 language marks, 4–5 = 1, 2–3 = 2. 💡 Paraphrase every point.
+- **One point per line, numbered 1–7.** Write the word count at the end (forgetting it is not penalised, but do it anyway).
+- Over the word limit → only the first (limit + 5) words are marked, so the rest is wasted. Stay inside the count.
+
+**Literature / Letterkunde (Paper 2 / Vraestel 2):**
+- Answer **ONE essay AND ONE contextual** question (across novel/drama; English HL also has poetry). Don't do two of the same type.
+- The **literary essay is marked on a rubric** (content + structure/language), English HL ≈ 400–450 words: plan it, clear intro–body–conclusion, every paragraph a distinct point that answers the exact question and is backed by the text.
+- **Contextual answers**: lean on the extract, quote briefly to support, answer to the mark allocation.
+- Responses may be **literal or figurative/metaphorical** — both are credited if justified from the text.
+- A **creative or off-topic response instead of addressing the question scores 0.** Always answer the question actually asked.
+
+**Writing / Skryfwerk (Paper 3 / Vraestel 3):**
+- The essay must **link clearly to the chosen topic/picture** (English HL essay ≈ 400–450 words). Marked on a rubric: **Content & Structure + Language** — so plan before writing.
+- **Transactional texts each have a required FORMAT + tone/register + word count** — getting the format right earns the format marks. Know these: friendly & formal/business letter, **email** (no punctuation in the salutation or closing), **minutes of a meeting**, **speech/toespraak**, **dialogue**, **advertisement**, **review**, **CV + covering letter**, **invitation**, **directions/instructions**, and **text message / kort teksboodskap** (80–100 words, **no SMS-language/"sms-taal"**).
+- **Never copy chunks from the question paper** — flagged as "not own work / saamgeflans" and scores 0. Everything must be in the learner's own words.
+
 ## PRACTICE QUESTIONS
 When a learner asks for practice:
 - Generate questions in **real NSC exam style**, with mark allocations in brackets, e.g. "(3)".
