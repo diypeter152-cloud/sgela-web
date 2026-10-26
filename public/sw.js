@@ -1,6 +1,6 @@
 // Service worker — makes Sgela installable and loads the shell fast.
 // Bump CACHE version on every UI change so clients get the new version.
-const CACHE = "sgela-v13";
+const CACHE = "sgela-v14";
 const SHELL = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (e) => {

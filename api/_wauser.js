@@ -1,26 +1,26 @@
 // ============================================================
-//  Sgela — WhatsApp user status (trial / paid gating by phone number)
-//  Stored in Upstash:  wauser:<number> = { firstSeen, trialEnds, paidUntil, msgCount }
+//  Sgela — WhatsApp user status (free questions / paid gating by phone number)
+//  Stored in Upstash:  wauser:<number> = { firstSeen, paidUntil, msgCount }
 // ============================================================
 
 import { kvConfigured, kvGet, kvSet, kvIncr } from "./_kv.js";
 
-const TRIAL_DAYS = 0; // Free trial OFF — new users must subscribe. Set to 7 to re-enable.
+export const FREE_QUESTIONS = 3; // free taste before the paywall
 const PAID_DAYS = 30;
 const DAY = 86400;
 
 function now() { return Math.floor(Date.now() / 1000); }
 
-// Load (or create) a user record. New numbers start a 7-day free trial.
+// Load (or create) a user record. New numbers get FREE_QUESTIONS free, then pay.
 export async function getUser(number) {
   if (!kvConfigured()) {
     // no store -> treat everyone as trial so the bot still works
-    return { state: "trial", trialEnds: now() + TRIAL_DAYS * DAY, msgCount: 0, _ephemeral: true };
+    return { state: "trial", msgCount: 0, paidUntil: 0, _ephemeral: true };
   }
   let u = null;
   try { const raw = await kvGet(`wauser:${number}`); if (raw) u = JSON.parse(raw); } catch {}
   if (!u) {
-    u = { firstSeen: now(), trialEnds: now() + TRIAL_DAYS * DAY, paidUntil: 0, msgCount: 0 };
+    u = { firstSeen: now(), paidUntil: 0, msgCount: 0 };
     try { await kvSet(`wauser:${number}`, JSON.stringify(u), 400 * DAY); } catch {}
     try { await kvIncr("stat:newusers"); } catch {} // funnel: first-time students
   }
@@ -31,7 +31,7 @@ function withState(u) {
   const t = now();
   let state = "expired";
   if (u.paidUntil && u.paidUntil > t) state = "paid";
-  else if (u.trialEnds && u.trialEnds > t) state = "trial";
+  else if ((u.msgCount || 0) < FREE_QUESTIONS) state = "trial"; // free questions left
   return { ...u, state };
 }
 
@@ -52,8 +52,13 @@ export async function markPaid(number, days = PAID_DAYS) {
   try { await kvSet(`wauser:${number}`, JSON.stringify(u), 400 * DAY); } catch {}
 }
 
+// Free questions remaining before this message is counted.
+export function freeLeft(u) {
+  return Math.max(0, FREE_QUESTIONS - (u.msgCount || 0));
+}
+
+// Days left on a paid subscription.
 export function daysLeft(u) {
   const t = now();
-  const end = u.state === "paid" ? u.paidUntil : u.trialEnds;
-  return Math.max(0, Math.ceil((end - t) / DAY));
+  return Math.max(0, Math.ceil(((u.paidUntil || 0) - t) / DAY));
 }
