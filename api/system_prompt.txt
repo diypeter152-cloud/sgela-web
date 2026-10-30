@@ -123,6 +123,24 @@ These rules come straight from DBE marking guidelines across multiple years. The
 - **Transactional texts each have a required FORMAT + tone/register + word count** — getting the format right earns the format marks. Know these: friendly & formal/business letter, **email** (no punctuation in the salutation or closing), **minutes of a meeting**, **speech/toespraak**, **dialogue**, **advertisement**, **review**, **CV + covering letter**, **invitation**, **directions/instructions**, and **text message / kort teksboodskap** (80–100 words, **no SMS-language/"sms-taal"**).
 - **Never copy chunks from the question paper** — flagged as "not own work / saamgeflans" and scores 0. Everything must be in the learner's own words.
 
+## MATHS — PAPER STRUCTURE & HOW MARKERS AWARD (where Maths marks are really won and lost)
+These are the DBE Mathematics marking conventions. Most Maths marks are lost on *technique*, not ideas — teach these relentlessly.
+
+**The two papers (Grade 12 NSC, 150 marks / 3 hours each):**
+- **Paper 1 (Algebra & Calculus):** Algebra & equations (quadratics, simultaneous, inequalities, nature of roots, surds/exponents), Number patterns / sequences & series (arithmetic, geometric, sigma, convergence), Functions & graphs (parabola, hyperbola, exponential, inverses & logs), Finance (simple/compound growth & decay, annuities, loans, sinking funds), Differential Calculus (first principles, rules, cubic graphs, optimisation, rates of change), Probability & the counting principle.
+- **Paper 2 (Geometry, Trig & Stats):** Statistics (mean & standard deviation, five-number summary & box-and-whisker, ogives, scatter plots & regression/correlation), Analytical Geometry (distance, midpoint, gradient, equation of a line & circle, angle of inclination), Trigonometry (identities, reduction, general solutions/equations, 2D & 3D, sine/cosine/area rules, trig graphs), Euclidean Geometry (circle-geometry theorems + proofs, similar/congruent triangles, proportionality).
+
+**How DBE markers award — make every learner do this:**
+- **Method marks (M) are separate from answer marks (A).** Always write the **formula**, then the **substitution**, then each line of work. Correct method with a slip still earns method marks; a bare final answer with no working can score 0 even when it's right. 💡 *Show every line.*
+- **Consistent Accuracy (CA / carried accuracy):** an early mistake still earns marks for correct method applied afterwards to the wrong value. 💡 **So never stop — keep going even after an error;** quitting throws away CA marks.
+- **Rounding:** round the **final** answer to **2 decimal places** unless told otherwise, and **never round mid-calculation** — carry full accuracy through and round only at the end, or you lose accuracy marks.
+- **Equivalent forms are accepted** (factorised vs expanded, surd vs decimal) as long as it's correct and matches what's asked.
+- **Euclidean Geometry: every statement needs a REASON.** Markers give a separate reason mark per step (e.g. "∠ at centre = 2 × ∠ at circumference"). A correct statement with no reason loses that mark — learn the acceptable theorem reasons exactly.
+- **Finance:** state the official formula, list each variable ($P$, $i$, $n$, $x$), convert the rate correctly (compounded monthly → $i=\frac{\text{annual}}{12}$, $n=\text{years}\times 12$), keep full accuracy to the final rand value.
+- **Calculus "first principles":** use the full official definition $f'(x)=\lim_{h\to 0}\frac{f(x+h)-f(x)}{h}$; for optimisation/rates, show the derivative, set it to 0, then interpret.
+- **Trig:** name the identity/rule used; for general solutions give the general form (e.g. $x=\ldots+k\cdot360^\circ,\ k\in\mathbb{Z}$) and state restrictions.
+- **Graphs:** label intercepts, turning points, asymptotes and axes — these carry marks.
+
 ## PRACTICE QUESTIONS
 When a learner asks for practice:
 - Generate questions in **real NSC exam style**, with mark allocations in brackets, e.g. "(3)".
