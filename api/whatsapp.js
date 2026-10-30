@@ -13,7 +13,7 @@
 import fs from "fs";
 import path from "path";
 import { kvConfigured, kvGet, kvSet, kvIncr } from "./_kv.js";
-import { getUser, bumpCount, FREE_QUESTIONS } from "./_wauser.js";
+import { getUser, bumpCount, FREE_QUESTIONS, setReferredBy, REF_GOAL } from "./_wauser.js";
 
 const SYSTEM_PROMPT = fs.readFileSync(
   path.join(process.cwd(), "api", "system_prompt.txt"),
@@ -70,14 +70,39 @@ async function handleMessage(req) {
     const user = await getUser(from);
     const origin = `https://${req.headers.host}`;
 
+    // ---- referral: "code" command + entering a friend's code (text only) ----
+    if (message.type === "text") {
+      const up = (message.text?.body || "").trim().toUpperCase();
+      if (["CODE", "MY CODE", "REFER", "REFERRAL", "INVITE"].includes(up)) {
+        const need = REF_GOAL - ((user.refCount || 0) % REF_GOAL);
+        await sendWhatsApp(
+          from,
+          `🎁 *Your Skolo referral code: ${user.refCode}*\n\nShare it! When *${REF_GOAL} friends subscribe* with your code, you get a *FREE month* 🎉\n\nSo far: ${user.refCount || 0} referral${(user.refCount || 0) === 1 ? "" : "s"} — ${need} more to your next free month.`
+        );
+        return;
+      }
+      if (/^SK[A-Z0-9]{4}$/.test(up) && up !== (user.refCode || "")) {
+        const r = await setReferredBy(from, up);
+        const replies = {
+          ok: `✅ Code *${up}* accepted — you're backing a friend! When you subscribe, they get credit. Now ask me anything 📚`,
+          self: `😅 That's your *own* code! Share it with friends instead — ${REF_GOAL} subscribe and you get a free month.`,
+          already: `You've already used a referral code 👍 Ask me anything!`,
+          unknown: `Hmm, I don't recognise that code. Double-check and resend, or just ask me a question 📚`,
+        };
+        await sendWhatsApp(from, replies[r] || replies.unknown);
+        return;
+      }
+    }
+
     if (user.state === "expired") {
       const link = `${origin}/api/pay-wa?n=${encodeURIComponent(from)}`;
       const returning = user.paidUntil && user.paidUntil > 0; // has subscribed before
       const msg = returning
         ? `Your Skolo subscription has ended. 🎓\n\nRenew to keep your Matric tutor — Maths, Sciences, Geography, English & Afrikaans — for *R50/month*.\n\nTap to renew (card or instant EFT):\n${link}\n\nOnce you've paid, message me again and we're back. 💪`
         : `🎓 That's your *3 free questions* done — hope Skolo's already helping!\n\nKeep your own *private* Matric tutor — Maths, Sciences, Geography, English & Afrikaans — in your pocket 24/7, for just *R50/month* (about 2 kotas, cheaper than one tutoring session).\n\n💡 Ask anything, text or photo, day or night.\n\n👉 Tap to subscribe (card or instant EFT):\n${link}\n\nPay once, message me, and we're in. Let's get those marks 💪`;
+      const ref = `\n\n🎁 *Or get it free:* share your code *${user.refCode}* — when ${REF_GOAL} friends subscribe with it, your next month is on us.`;
       const terms = `\n\n_By subscribing you agree to our Terms & Privacy Policy:_\n${origin}/terms.html`;
-      await sendWhatsApp(from, msg + terms);
+      await sendWhatsApp(from, msg + ref + terms);
       try { await kvIncr("stat:prompts"); } catch {} // funnel: pay prompts shown
       return;
     }

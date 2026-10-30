@@ -7,7 +7,7 @@
 //   since the shared sandbox merchant doesn't sign ITNs the same way.
 import { PF, pfVerifyItnSignature, pfValidateUrl, phpUrlEncode } from "./_payfast.js";
 import { kvConfigured, kvGet, kvSet, kvIncr } from "./_kv.js";
-import { markPaid } from "./_wauser.js";
+import { markPaid, creditReferral, REF_GOAL, refCodeFor } from "./_wauser.js";
 
 // Send a WhatsApp text (used to welcome a student the moment payment confirms)
 async function sendWhatsApp(to, text) {
@@ -106,9 +106,22 @@ export default async function handler(req, res) {
         try {
           await sendWhatsApp(
             waNumber,
-            `🎉 You're in! Your *Skolo* subscription is active for the next 30 days.\n\nAsk me anything — type a question or snap a photo of it. Maths, Sciences, Geography, English & Afrikaans.\n\nLet's get those marks 📚💪`
+            `🎉 You're in! Your *Skolo* subscription is active for the next 30 days.\n\nAsk me anything — type a question or snap a photo of it. Maths, Sciences, Geography, English & Afrikaans.\n\n🎁 *Your referral code: ${refCodeFor(waNumber)}* — get ${REF_GOAL} friends to subscribe with it and your next month is FREE!\n\nLet's get those marks 📚💪`
           );
         } catch (e) { console.error("welcome send failed", e); }
+
+        // referral: credit the friend whose code this student used
+        try {
+          const r = await creditReferral(waNumber);
+          if (r && r.referrer) {
+            if (r.rewarded) {
+              await sendWhatsApp(r.referrer, `🎉 Boom! ${REF_GOAL} friends have now subscribed with your Skolo code — you've earned a *FREE month* 🥳 It's already on your account. Keep sharing!`);
+            } else {
+              const need = REF_GOAL - (r.count % REF_GOAL);
+              await sendWhatsApp(r.referrer, `🙌 A friend just subscribed with your Skolo code! That's *${r.count}* so far — ${need} more and your next month is *free*.`);
+            }
+          }
+        } catch (e) { console.error("referral credit failed", e); }
       }
     }
 

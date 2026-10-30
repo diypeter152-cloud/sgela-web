@@ -1,0 +1,210 @@
+// ============================================================
+//  SGELA AI — WhatsApp bot (Meta WhatsApp Cloud API)
+//  GET  /api/whatsapp -> webhook verification handshake
+//  POST /api/whatsapp -> handle a student's message (text OR photo)
+//
+//  Features: 7-day free trial per number, PayFast pay-by-link gating,
+//  photo reading (vision), short per-student memory. Same Skolo brain.
+//
+//  Env (Vercel): WHATSAPP_VERIFY_TOKEN, WHATSAPP_TOKEN, WHATSAPP_PHONE_ID,
+//  OPENAI_API_KEY, UPSTASH_REDIS_REST_* , PAYFAST_* (already set)
+// ============================================================
+
+import fs from "fs";
+import path from "path";
+import { kvConfigured, kvGet, kvSet, kvIncr } from "./_kv.js";
+import { getUser, bumpCount, FREE_QUESTIONS, setReferredBy, REF_GOAL } from "./_wauser.js";
+
+const SYSTEM_PROMPT = fs.readFileSync(
+  path.join(process.cwd(), "api", "system_prompt.txt"),
+  "utf8"
+);
+const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || "";
+const WA_TOKEN = process.env.WHATSAPP_TOKEN || "";
+const WA_PHONE_ID = process.env.WHATSAPP_PHONE_ID || "";
+
+// Raise the serverless timeout so a photo (vision) call has room to finish.
+export const maxDuration = 30;
+
+export default async function handler(req, res) {
+  // 1. Webhook verification (Meta calls once on connect)
+  if (req.method === "GET") {
+    const mode = req.query["hub.mode"];
+    const token = req.query["hub.verify_token"];
+    const challenge = req.query["hub.challenge"];
+    if (mode === "subscribe" && token && token === VERIFY_TOKEN) {
+      return res.status(200).send(challenge);
+    }
+    return res.status(403).send("Forbidden");
+  }
+  if (req.method !== "POST") return res.status(405).end();
+
+  // Do the work FIRST, then ack. On Vercel the function can be frozen the
+  // moment the response is sent, so acking early drops the reply.
+  try {
+    await handleMessage(req);
+  } catch (e) {
+    console.error("whatsapp handler error", e);
+  }
+  try { res.status(200).end(); } catch {}
+}
+
+async function handleMessage(req) {
+  const value = req.body?.entry?.[0]?.changes?.[0]?.value;
+  const message = value?.messages?.[0];
+  if (!message) return;
+  const from = message.from;
+  if (!from) return;
+
+  // ---- de-dupe: Meta re-delivers if we're slow; answer each message once ----
+  if (kvConfigured() && message.id) {
+    try {
+      const seen = await kvGet(`waseen:${message.id}`);
+      if (seen) return;
+      await kvSet(`waseen:${message.id}`, "1", 600);
+    } catch {}
+  }
+
+  {
+    // ---- gating ----
+    const user = await getUser(from);
+    const origin = `https://${req.headers.host}`;
+
+    // ---- referral: "code" command + entering a friend's code (text only) ----
+    if (message.type === "text") {
+      const up = (message.text?.body || "").trim().toUpperCase();
+      if (["CODE", "MY CODE", "REFER", "REFERRAL", "INVITE"].includes(up)) {
+        const need = REF_GOAL - ((user.refCount || 0) % REF_GOAL);
+        await sendWhatsApp(
+          from,
+          `🎁 *Your Skolo referral code: ${user.refCode}*\n\nShare it! When *${REF_GOAL} friends subscribe* with your code, you get a *FREE month* 🎉\n\nSo far: ${user.refCount || 0} referral${(user.refCount || 0) === 1 ? "" : "s"} — ${need} more to your next free month.`
+        );
+        return;
+      }
+      if (/^SK[A-Z0-9]{4}$/.test(up) && up !== (user.refCode || "")) {
+        const r = await setReferredBy(from, up);
+        const replies = {
+          ok: `✅ Code *${up}* accepted — you're backing a friend! When you subscribe, they get credit. Now ask me anything 📚`,
+          self: `😅 That's your *own* code! Share it with friends instead — ${REF_GOAL} subscribe and you get a free month.`,
+          already: `You've already used a referral code 👍 Ask me anything!`,
+          unknown: `Hmm, I don't recognise that code. Double-check and resend, or just ask me a question 📚`,
+        };
+        await sendWhatsApp(from, replies[r] || replies.unknown);
+        return;
+      }
+    }
+
+    if (user.state === "expired") {
+      const link = `${origin}/api/pay-wa?n=${encodeURIComponent(from)}`;
+      const returning = user.paidUntil && user.paidUntil > 0; // has subscribed before
+      const msg = returning
+        ? `Your Skolo subscription has ended. 🎓\n\nRenew to keep your Matric tutor — Maths, Sciences, Geography, English & Afrikaans — for *R50/month*.\n\nTap to renew (card or instant EFT):\n${link}\n\nOnce you've paid, message me again and we're back. 💪`
+        : `🎓 That's your *3 free questions* done — hope Skolo's already helping!\n\nKeep your own *private* Matric tutor — Maths, Sciences, Geography, English & Afrikaans — in your pocket 24/7, for just *R50/month* (about 2 kotas, cheaper than one tutoring session).\n\n💡 Ask anything, text or photo, day or night.\n\n👉 Tap to subscribe (card or instant EFT):\n${link}\n\nPay once, message me, and we're in. Let's get those marks 💪`;
+      const ref = `\n\n🎁 *Or get it free:* share your code *${user.refCode}* — when ${REF_GOAL} friends subscribe with it, your next month is on us.`;
+      const terms = `\n\n_By subscribing you agree to our Terms & Privacy Policy:_\n${origin}/terms.html`;
+      await sendWhatsApp(from, msg + ref + terms);
+      try { await kvIncr("stat:prompts"); } catch {} // funnel: pay prompts shown
+      return;
+    }
+
+    // ---- build the question (text or photo) ----
+    let userContent = null;      // string or vision-style array
+    let plainForMemory = "";
+
+    if (message.type === "text") {
+      plainForMemory = (message.text?.body || "").trim();
+      if (!plainForMemory) return;
+      userContent = plainForMemory;
+    } else if (message.type === "image") {
+      const b64 = await fetchWhatsAppImage(message.image?.id);
+      if (!b64) {
+        await sendWhatsApp(from, "I couldn't open that image — try sending it again, or type the question out 🙏");
+        return;
+      }
+      const caption = (message.image?.caption || "").trim();
+      plainForMemory = caption ? `[photo] ${caption}` : "[photo of a question]";
+      userContent = [
+        { type: "text", text: caption || "Here's a photo of a question I'm stuck on. Please read it and help me solve it, step by step the CAPS way." },
+        { type: "image_url", image_url: { url: `data:${message.image?.mime_type || "image/jpeg"};base64,${b64}` } },
+      ];
+    } else {
+      // voice notes, stickers, etc. — gently steer
+      await sendWhatsApp(from, "Send me a question as *text* or a *photo* of it and I'll help you solve it 📚");
+      return;
+    }
+
+    // ---- short memory (text only; images are one-shot) ----
+    let history = [];
+    if (kvConfigured()) {
+      try { const raw = await kvGet(`wa:${from}`); if (raw) history = JSON.parse(raw); } catch {}
+    }
+    const messages = [
+      { role: "system", content: SYSTEM_PROMPT },
+      ...history,
+      { role: "user", content: userContent },
+    ];
+
+    const answer = await askSkolo(messages);
+
+    // save memory as plain text so it stays small
+    history.push({ role: "user", content: plainForMemory });
+    history.push({ role: "assistant", content: answer });
+    if (kvConfigured()) {
+      try { await kvSet(`wa:${from}`, JSON.stringify(history.slice(-12)), 30 * 24 * 3600); } catch {} // remember the student (name, context) for ~30 days
+    }
+
+    // free-question nudge on the way out
+    let suffix = "";
+    if (user.state === "trial") {
+      const remainingAfter = FREE_QUESTIONS - ((user.msgCount || 0) + 1); // after this answer
+      const payLink = `${origin}/api/pay-wa?n=${encodeURIComponent(from)}`;
+      if (remainingAfter <= 0) {
+        suffix = `\n\n👋 That was your last *free question*! Loving Skolo? Keep your private tutor — all subjects, 24/7 — for just *R50/month* (about 2 kotas):\n${payLink}`;
+      } else {
+        suffix = `\n\n✨ ${remainingAfter} free question${remainingAfter === 1 ? "" : "s"} left.`;
+      }
+    }
+
+    await sendWhatsApp(from, answer + suffix);
+    await bumpCount(from, user);
+  }
+}
+
+// ---- OpenAI (vision-capable) ----
+async function askSkolo(messages) {
+  try {
+    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+      body: JSON.stringify({ model: "gpt-4o-mini", messages, max_tokens: 800 }),
+    });
+    const data = await resp.json();
+    if (data.error) { console.error("OpenAI error:", data.error); return "Eish, I hit a snag there. Try again in a sec 🙏"; }
+    return (data.choices?.[0]?.message?.content || "…").trim();
+  } catch (e) { console.error("askSkolo", e); return "Something went wrong on my side. Try again 🙏"; }
+}
+
+// ---- download a WhatsApp image and return base64 ----
+async function fetchWhatsAppImage(mediaId) {
+  if (!mediaId) return null;
+  try {
+    const meta = await fetch(`https://graph.facebook.com/v21.0/${mediaId}`, {
+      headers: { Authorization: `Bearer ${WA_TOKEN}` },
+    }).then((r) => r.json());
+    if (!meta.url) return null;
+    const buf = await fetch(meta.url, { headers: { Authorization: `Bearer ${WA_TOKEN}` } })
+      .then((r) => r.arrayBuffer());
+    return Buffer.from(buf).toString("base64");
+  } catch (e) { console.error("fetchWhatsAppImage", e); return null; }
+}
+
+// ---- send a WhatsApp text message ----
+async function sendWhatsApp(to, text) {
+  try {
+    await fetch(`https://graph.facebook.com/v21.0/${WA_PHONE_ID}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${WA_TOKEN}` },
+      body: JSON.stringify({ messaging_product: "whatsapp", to, type: "text", text: { body: text } }),
+    });
+  } catch (e) { console.error("sendWhatsApp", e); }
+}
